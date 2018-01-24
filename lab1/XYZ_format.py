@@ -14,6 +14,8 @@ def write_atoms(fname, atom_coords, names=None):
             f.write('{}\n'.format(line))
 
 def write_XYZ(fname, description, coordinates_arr):
+    print('writing file {}'.format(fname))
     N = len(coordinates_arr)
+    print('Particle number: {}\n description: {}'.format(N,description))
     write_head(fname, N, description)
     write_atoms(fname, coordinates_arr)
