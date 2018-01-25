@@ -3,8 +3,12 @@ import numpy as np
 from scipy.optimize import curve_fit
 from functools import partial
 import multiprocessing
+import logging
+import sys
 
-
+LOG_FORMAT = '%(asctime)s - %(message)s'
+logging.basicConfig(filename='linearity_test_results.log', level=logging.DEBUG, format=LOG_FORMAT)
+logger = logging.getLogger()
 # seed, a, c, m are all prime numbers, to avoid periodicity
 seed = 4211
 
@@ -99,6 +103,13 @@ def linearity_test(RNG, ax, name=None):
     print('standard error: {}'.format(*std))
     print('slope: {}'.format(*parameters))
     print('expected slope: 3\n')
+    
+    def logging_info(d):
+        '''Logging the parameters and outputs of this function'''
+        li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)]
+        message = '{}: {}' 
+        logger.info(', '.join([message.format(*tup) for tup in li]))
+    logging_info(locals())
 
     ax.set(title= name, xlabel='steps', ylabel='distance squared')
     ax.plot(xs, MSDs_mean)
@@ -111,6 +122,8 @@ def plot_linear():
     linearity_test(LCG, axes[0], 'LCG')
     linearity_test(npRNG, axes[1], 'numpy RNG')
     plt.show(fig)
+    print('The seed is predetermined for function LCG, so the slope of LCG is the same everytime, but npRNG changes everytime you run.\
+            the slope it generally approaches 3, but sometimes go beyond 3')
 
 ### Uncomment to plot
 plot_linear()
