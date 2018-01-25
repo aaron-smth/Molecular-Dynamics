@@ -1,6 +1,7 @@
 import numpy as np
 
 def write_head(fname, N, head):
+    print('Writting to file {}'.format(fname))
     with open(fname, 'w') as f:
         f.write('{}\n'.format(N))
         f.write(head+'\n')
