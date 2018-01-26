@@ -61,6 +61,11 @@ def N_particle_walk(N, steps, RNG):
     # Returning an 3D array of size (N, steps, 3), the three indices correspond to (particle index, step index, (x,y,z) coordinate index )
     return np.array(particle_positions)
 
+def N_particle_walk2(N, steps, RNG):
+    for i in range(N):
+        yield RandomWalk(steps, RNG)
+
+
 def pos_to_MSD_mean(N, walk_steps, sample_steps, particle_positions):
     '''1.sample the positions
        2.from positions to mean squared distance, averaged over N particles'''
@@ -126,7 +131,7 @@ def plot_linear():
             the slope it generally approaches 3, but sometimes go beyond 3')
 
 ### Uncomment to plot
-plot_linear()
+# plot_linear()
 
 # writting the XYZ file
 def write_to_XYZ():
