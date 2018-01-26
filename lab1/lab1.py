@@ -89,8 +89,7 @@ def plot_linear():
     linearity_test(LCG, axes[0], 'LCG')
     linearity_test(npRNG, axes[1], 'numpy RNG')
     plt.show(fig)
-    print('The seed is predetermined for function LCG, so the slope of LCG is the same everytime, but npRNG changes everytime you run.\
-            the slope it generally approaches 3, but sometimes go beyond 3')
+    print('The seed is predetermined for function LCG, so the slope of LCG is the same everytime, but npRNG changes everytime you run')
 
 # writting the XYZ file
 def write_to_XYZ():
@@ -103,6 +102,6 @@ def write_to_XYZ():
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    #plot_linear()
-    write_to_XYZ()
+    plot_linear()
+    #write_to_XYZ()
 

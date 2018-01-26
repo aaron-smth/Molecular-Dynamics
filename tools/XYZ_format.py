@@ -1,4 +1,5 @@
 import numpy as np
+import os
 
 def write_head(fname, N, head):
     with open(fname, 'w') as f:
@@ -14,8 +15,13 @@ def write_atoms(fname, atom_coords, names=None):
             f.write('{}\n'.format(line))
 
 def write_XYZ(fname, description, coordinates_arr):
+    head = './XYZ/'
+    os.makedirs(head, exist_ok=True)
+
     print('writing file {}'.format(fname))
+
     N = len(coordinates_arr)
     print('Particle number: {}\n description: {}'.format(N,description))
-    write_head(fname, N, description)
-    write_atoms(fname, coordinates_arr)
+
+    write_head(head + fname, N, description)
+    write_atoms(head + fname, coordinates_arr)

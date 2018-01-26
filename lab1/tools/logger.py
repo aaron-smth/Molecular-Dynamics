@@ -10,6 +10,7 @@ def logging_dict(d):
     li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)] # logging varoables that are not too big and not functions
     message = '{}: {}' 
     logger.info(', '.join([message.format(*tup) for tup in li]))
+    print('Results Logged')
 
 def logging_time(func):
     import time 
@@ -19,6 +20,7 @@ def logging_time(func):
         func(*args, **kwargs)        
 
         duration = time.time() - start
+        print('duration: {}\n'.format(duration))
         logging.info('duration : {}'.format(duration)) # logging runtime
     return wrapper
 
