@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-import logging, sys, time
-
-LOG_FORMAT = '%(asctime)s - %(message)s'
-logging.basicConfig(filename='results.log', level=logging.DEBUG, format=LOG_FORMAT)
-logger = logging.getLogger()
+from logger import logging_time, logging_dict
 
 def LCG():
     '''LCG Random Number generator'''
@@ -29,6 +25,7 @@ def npRNG():
             yield -1
         else:
             yield 1
+#instantiate the generators LCG and npRNG
 LCG = LCG()
 npRNG = npRNG()
 
@@ -39,56 +36,51 @@ def RandomWalk(steps, RNG):
     pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
     return pos
 
-def sampled_MSD(N, steps, sample_indices, RNG):
+def pos_to_sampled_MSD(N, steps, sample_indices, RNG):
     for i in range(N):
         pos = RandomWalk(steps, RNG)[sample_indices,:]
         MSD = np.sum(pos**2, axis=1)
         yield MSD
 
+def samppling(N, walk_steps, sample_steps, RNG):
+
+    sample_size = walk_steps // sample_steps
+    sample_indices = np.arange(sample_size) * sample_steps
+
+    print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
+    
+    MSD_mean = np.sum(pos_to_sampled_MSD(N, walk_steps, sample_indices, RNG)) / N
+
+    return sample_indices, MSD_mean
+
+@logging_time #recording the runtime of this function and recording it in results.log
 def linearity_test(RNG, ax, name=None):
-    start = time.time()
     '''1.Generate a 500 particle system, each walking 5000 steps, sampled every 10 steps
        2.Finding the MSD of this system
        3.Linear fit the function (N,MSD) using scipy.optimize.curve_fit
        4.Plotting the fitting line and the data'''
-    N = 500
-    walk_steps = 5000
-    sample_steps = 10
-    sample_size = walk_steps // sample_steps
-    sample_indices = np.arange(sample_size) * sample_steps
-
+ 
     print('Linear fitting of random walk')
     print('RNG: {}'.format(name))
-    print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
-    
-    MSD_mean = np.sum(sampled_MSD(N, walk_steps, sample_indices, RNG)) / N
-    xs = sample_indices
+    xs, ys = samppling(500, 5000, 10, RNG)
 
     def f(x, slope):
         '''Assuming MSD is proportional to N'''
         return slope*x
 
     # curve_fit: argument:(fitting function, xdata, ydata) return: (best fit parameters, standard deviation)
-    parameters, std = curve_fit(f, xs, MSD_mean)
-    linear = f(xs,*parameters) # the MSD of the fitted line
+    parameters, std = curve_fit(f, xs, ys)
+    yfit = f(xs, *parameters) # the MSD of the fitted line
  
     print('standard error: {}'.format(*std))
     print('slope: {}'.format(*parameters))
     print('expected slope: 3\n')
-    
-    def logging_info(d):
-        '''Logging the parameters and outputs of this function'''
-        li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)] # logging varoables that are not too big and not functions
-        message = '{}: {}' 
-        logger.info(', '.join([message.format(*tup) for tup in li]))
-        duration = time.time() - start
-        logging.info('duration : {}'.format(duration)) # logging runtime
-    logging_info(locals()) # logging local variables
-    
+ 
+    logging_dict(locals()) #recording the results of this test 
 
     ax.set(title= name, xlabel='steps', ylabel='distance squared')
-    ax.plot(xs, MSD_mean)
-    ax.plot(xs, linear, color='red', alpha=0.7, label='linear fitting')
+    ax.plot(xs, ys)
+    ax.plot(xs, yfit, color='red', alpha=0.7, label='linear fitting')
 
 # plotting the linear fitting of N walks
 def plot_linear():
@@ -111,6 +103,6 @@ def write_to_XYZ():
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    #plot_linear()
-    write_to_XYZ()
+    plot_linear()
+    #write_to_XYZ()
 
