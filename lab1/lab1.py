@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from logger import logging_time, logging_dict
+from tools.logger import logging_time, logging_dict
 
 def LCG():
     '''LCG Random Number generator'''
@@ -97,12 +97,12 @@ def write_to_XYZ():
     steps = 5000
     LCG_walk = RandomWalk(steps, LCG)
     npRNG_walk = RandomWalk(steps, npRNG)
-    from XYZ_format import write_XYZ
+    from tools.XYZ_format import write_XYZ
     write_XYZ('LCG.xyz', 'a random walk of 5000 steps using LCG random number generator', LCG_walk)
     write_XYZ('npRNG.xyz', 'a random walk of 5000 steps using numpy random number generator', npRNG_walk)
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    plot_linear()
-    #write_to_XYZ()
+    #plot_linear()
+    write_to_XYZ()
 

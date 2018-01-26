@@ -43,3 +43,7 @@
 2018-01-26 16:32:38,538 - duration : 3.8618218898773193
 2018-01-26 16:32:44,554 - std: [[  1.41318223e-05]], parameters: [ 3.13037345], name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x116be80f8>
 2018-01-26 16:32:44,558 - duration : 6.02038311958313
+2018-01-26 17:06:52,977 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x10c5bd0a0>
+2018-01-26 17:06:52,982 - duration : 3.9096550941467285
+2018-01-26 17:06:58,903 - std: [[  6.16562978e-06]], parameters: [ 3.07452173], name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x10c5bd0f8>
+2018-01-26 17:06:58,906 - duration : 5.9244301319122314
