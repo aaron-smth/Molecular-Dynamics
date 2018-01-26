@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-from functools import partial
 import logging, sys, time
 
 LOG_FORMAT = '%(asctime)s - %(message)s'
-logging.basicConfig(filename='linearity_test_results.log', level=logging.DEBUG, format=LOG_FORMAT)
+logging.basicConfig(filename='results.log', level=logging.DEBUG, format=LOG_FORMAT)
 logger = logging.getLogger()
 
 def LCG():
