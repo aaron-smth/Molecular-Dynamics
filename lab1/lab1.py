@@ -2,50 +2,42 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from functools import partial
-import logging
-import sys
+import logging, sys, time
 
 LOG_FORMAT = '%(asctime)s - %(message)s'
 logging.basicConfig(filename='linearity_test_results.log', level=logging.DEBUG, format=LOG_FORMAT)
 logger = logging.getLogger()
-# seed, a, c, m are all prime numbers, to avoid periodicity
-seed = 4211
-
-state = seed # memory of function LCG, keeps updating
-
-a = 1559
-c = 313
-m = 13229
 
 def LCG():
     '''LCG Random Number generator'''
-    global state
-    result = (a*state+c) % m
-    state = result
-    return hashfunc(state)
+    # seed, a, c, m are all prime numbers, to avoid periodicity
+    state = 4211 # This is the seed
 
-def hashfunc(n):
-    if n/m < 0.5:
-        return -1
-    else:
-        return 1
+    a = 1559
+    c = 313
+    m = 13229
+    while True:
+        if state / m < 0.5:
+            yield -1
+        else:
+            yield 1
+        state = (a*state+c) % m
 
 def npRNG():
     '''Numpy Random Number Generator'''
-    if np.random.random() < 0.5:
-        return -1
-    else:
-        return 1
+    while True:
+        if np.random.random() < 0.5:
+            yield -1
+        else:
+            yield 1
+LCG = LCG()
+npRNG = npRNG()
 
-def RandomWalk(steps, RNG):
 
-    walks = []
-    for i in range(steps):
-        walks.append( [RNG(),RNG(),RNG()] ) # 3D random walk
-    walks = np.array(walks)
-
-    pos = walks.cumsum(axis=0) # cumulative sum of walks in every step
-
+def RandomWalk(steps, RNG): 
+    walks = list(next(RNG) for i in range(steps*3))
+    walks = np.array(walks).reshape(-1,3)
+    pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
     return pos
 
 def sampled_MSD(N, steps, sample_indices, RNG):
@@ -55,6 +47,7 @@ def sampled_MSD(N, steps, sample_indices, RNG):
         yield MSD
 
 def linearity_test(RNG, ax, name=None):
+    start = time.time()
     '''1.Generate a 500 particle system, each walking 5000 steps, sampled every 10 steps
        2.Finding the MSD of this system
        3.Linear fit the function (N,MSD) using scipy.optimize.curve_fit
@@ -86,10 +79,13 @@ def linearity_test(RNG, ax, name=None):
     
     def logging_info(d):
         '''Logging the parameters and outputs of this function'''
-        li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)]
+        li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)] # logging varoables that are not too big and not functions
         message = '{}: {}' 
         logger.info(', '.join([message.format(*tup) for tup in li]))
-    logging_info(locals())
+        duration = time.time() - start
+        logging.info('duration : {}'.format(duration)) # logging runtime
+    logging_info(locals()) # logging local variables
+    
 
     ax.set(title= name, xlabel='steps', ylabel='distance squared')
     ax.plot(xs, MSD_mean)

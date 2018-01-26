@@ -1,18 +1,21 @@
-2018-01-26 02:26:45,992 - std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 02:26:49,465 - std: [[ 0.00029673]], parameters: [ 2.95730546], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 02:28:01,749 - std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 02:28:05,229 - std: [[  7.41816583e-05]], parameters: [ 2.8052598], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 02:28:34,496 - std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 02:28:37,890 - std: [[  3.32970910e-05]], parameters: [ 2.95765361], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 02:34:18,967 - std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 02:34:22,550 - std: [[ 0.0001025]], parameters: [ 3.30068978], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 09:59:05,435 - std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 09:59:09,843 - std: [[  5.40979144e-05]], parameters: [ 3.13031198], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 12:17:23,103 - name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), std: [[  6.35301680e-05]], parameters: [ 3.50036629], sample_steps: 10, walk_steps: 5000, N: 500
-2018-01-26 12:18:23,358 - std: [[  4.92634787e-05]], parameters: [ 2.88161724], sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 13:12:48,037 - std: [[  2.59694030e-05]], parameters: [ 3.47369298], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 13:12:54,320 - std: [[  2.27149254e-06]], parameters: [ 3.06998828], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 13:13:33,214 - std: [[  2.59694030e-05]], parameters: [ 3.47369298], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77)
-2018-01-26 13:13:39,559 - std: [[  2.36183724e-06]], parameters: [ 3.08246572], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
-2018-01-26 13:18:51,336 - name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), std: [[  2.59694030e-05]], parameters: [ 3.47369298], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500
-2018-01-26 13:21:11,488 - std: [[  9.63300453e-06]], parameters: [ 2.9868821], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77)
+2018-01-26 14:44:20,260 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x10dc4afc0>
+2018-01-26 14:44:26,549 - std: [[  3.84818262e-06]], parameters: [ 2.93524222], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x10dcbe048>
+2018-01-26 14:45:52,469 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x118822fc0>
+2018-01-26 14:45:58,636 - std: [[  7.80435074e-06]], parameters: [ 3.09100487], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x118892048>
+2018-01-26 14:58:06,823 - name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x111b257d8>, std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500
+2018-01-26 15:01:33,820 - std: [[  1.88825082e-06]], parameters: [ 2.97835557], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x111b25830>
+2018-01-26 15:09:00,568 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x110f36048>
+2018-01-26 15:09:06,865 - std: [[  6.18440140e-06]], parameters: [ 3.11491344], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x110f360a0>
+2018-01-26 15:09:10,021 - duration: 13.669871091842651
+2018-01-26 15:11:20,085 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, start: 1516950676.1634681, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x118e92048>
+2018-01-26 15:11:20,085 - duration : 3.922287702560425
+2018-01-26 15:11:26,150 - std: [[  2.09425308e-06]], parameters: [ 3.04931093], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, start: 1516950680.089779, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x118e920a0>
+2018-01-26 15:11:26,150 - duration : 6.06047797203064
+2018-01-26 15:13:05,762 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, start: 1516950781.766453, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x10deaf048>
+2018-01-26 15:13:05,762 - duration : 3.996397018432617
+2018-01-26 15:13:12,376 - std: [[  3.51887207e-06]], parameters: [ 3.00229841], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, start: 1516950785.767261, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x10deaf0a0>
+2018-01-26 15:13:12,376 - duration : 6.609449863433838
+2018-01-26 15:14:58,954 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x110b59048>, start: 1516950895.0059378
+2018-01-26 15:14:58,954 - duration : 3.9490413665771484
+2018-01-26 15:15:05,418 - std: [[  7.12944507e-06]], parameters: [ 2.92239273], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x110b590a0>, start: 1516950898.958731
+2018-01-26 15:15:05,418 - duration : 6.459417104721069
