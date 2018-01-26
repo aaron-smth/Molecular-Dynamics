@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from functools import partial
-import multiprocessing
 import logging
 import sys
 
@@ -49,39 +48,11 @@ def RandomWalk(steps, RNG):
 
     return pos
 
-def N_particle_walk(N, steps, RNG):
-    '''Doing random walk for N particles with parallel computing'''
-    pool = multiprocessing.Pool(processes=16)
-
-    # feeding RandomWalk the second argument RNG, so that it becomes a single-argument function
-    walk = partial(RandomWalk, RNG=RNG) 
-    # Using multiple cores, feeding a list of the same variable "steps" to the function "walk"
-    particle_positions = pool.map(walk, np.ones(N,dtype=int)*steps)
-    
-    # Returning an 3D array of size (N, steps, 3), the three indices correspond to (particle index, step index, (x,y,z) coordinate index )
-    return np.array(particle_positions)
-
-def N_particle_walk2(N, steps, RNG):
+def sampled_MSD(N, steps, sample_indices, RNG):
     for i in range(N):
-        yield RandomWalk(steps, RNG)
-
-
-def pos_to_MSD_mean(N, walk_steps, sample_steps, particle_positions):
-    '''1.sample the positions
-       2.from positions to mean squared distance, averaged over N particles'''
-
-    sample_size = walk_steps // sample_steps
-    sample_indices = np.arange(sample_size) * sample_steps 
-
-    # Returning a sampled version of positions containing only the sampled steps
-    sample_positions = particle_positions[:,sample_indices,:] 
-
-    # summing the square of x,y,z coordinates, returning a 2D array (N, MSD)
-    MSD_arr =  np.sum(sample_positions**2, axis=2) 
-    # summing over MSD of N particles and divide it by number of particles
-    MSD_mean = np.sum(MSD_arr,axis=0) / N
-
-    return sample_indices, MSD_mean
+        pos = RandomWalk(steps, RNG)[sample_indices,:]
+        MSD = np.sum(pos**2, axis=1)
+        yield MSD
 
 def linearity_test(RNG, ax, name=None):
     '''1.Generate a 500 particle system, each walking 5000 steps, sampled every 10 steps
@@ -91,18 +62,22 @@ def linearity_test(RNG, ax, name=None):
     N = 500
     walk_steps = 5000
     sample_steps = 10
+    sample_size = walk_steps // sample_steps
+    sample_indices = np.arange(sample_size) * sample_steps
+
     print('Linear fitting of random walk')
     print('RNG: {}'.format(name))
     print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
-    particle_positions = N_particle_walk(N, walk_steps, RNG)
-    xs, MSDs_mean = pos_to_MSD_mean(N, walk_steps, sample_steps, particle_positions)
+    
+    MSD_mean = np.sum(sampled_MSD(N, walk_steps, sample_indices, RNG)) / N
+    xs = sample_indices
 
     def f(x, slope):
         '''Assuming MSD is proportional to N'''
         return slope*x
 
     # curve_fit: argument:(fitting function, xdata, ydata) return: (best fit parameters, standard deviation)
-    parameters, std = curve_fit(f, xs, MSDs_mean)
+    parameters, std = curve_fit(f, xs, MSD_mean)
     linear = f(xs,*parameters) # the MSD of the fitted line
  
     print('standard error: {}'.format(*std))
@@ -117,7 +92,7 @@ def linearity_test(RNG, ax, name=None):
     logging_info(locals())
 
     ax.set(title= name, xlabel='steps', ylabel='distance squared')
-    ax.plot(xs, MSDs_mean)
+    ax.plot(xs, MSD_mean)
     ax.plot(xs, linear, color='red', alpha=0.7, label='linear fitting')
 
 # plotting the linear fitting of N walks
@@ -131,7 +106,8 @@ def plot_linear():
             the slope it generally approaches 3, but sometimes go beyond 3')
 
 ### Uncomment to plot
-# plot_linear()
+if __name__ == "__main__":
+    plot_linear()
 
 # writting the XYZ file
 def write_to_XYZ():
