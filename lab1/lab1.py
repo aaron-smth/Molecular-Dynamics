@@ -100,10 +100,6 @@ def plot_linear():
     print('The seed is predetermined for function LCG, so the slope of LCG is the same everytime, but npRNG changes everytime you run.\
             the slope it generally approaches 3, but sometimes go beyond 3')
 
-### Uncomment to plot
-if __name__ == "__main__":
-    plot_linear()
-
 # writting the XYZ file
 def write_to_XYZ():
     steps = 5000
@@ -113,5 +109,8 @@ def write_to_XYZ():
     write_XYZ('LCG.xyz', 'a random walk of 5000 steps using LCG random number generator', LCG_walk)
     write_XYZ('npRNG.xyz', 'a random walk of 5000 steps using numpy random number generator', npRNG_walk)
 
-# write_to_XYZ()
+### Uncomment to plot
+if __name__ == "__main__":
+    #plot_linear()
+    write_to_XYZ()
 

@@ -23,3 +23,7 @@
 2018-01-26 15:38:41,447 - duration : 4.18648099899292
 2018-01-26 15:38:47,433 - std: [[  3.84333191e-06]], parameters: [ 3.00715494], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x11068e0a0>, start: 1516952321.452636
 2018-01-26 15:38:47,434 - duration : 5.981446981430054
+2018-01-26 15:42:05,635 - std: [[  2.60523537e-05]], parameters: [ 3.4727341], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: LCG, ax: Axes(0.125,0.11;0.352273x0.77), RNG: <generator object LCG at 0x10baa8048>, start: 1516952521.7361841
+2018-01-26 15:42:05,635 - duration : 3.8992807865142822
+2018-01-26 15:42:11,975 - std: [[  2.02212195e-06]], parameters: [ 3.00850523], sample_size: 500, sample_steps: 10, walk_steps: 5000, N: 500, name: numpy RNG, ax: Axes(0.547727,0.11;0.352273x0.77), RNG: <generator object npRNG at 0x10baa80a0>, start: 1516952525.639313
+2018-01-26 15:42:11,975 - duration : 6.336463928222656
