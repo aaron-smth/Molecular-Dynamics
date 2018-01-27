@@ -23,19 +23,20 @@ def LCG():
 LCG = LCG()
 
 def random_choice(choices, size=1):
-
+    '''Using LCG to randomly choose from a list of objects'''
     def hash(p):
         if type(choices) == int:
             return int(p * choices)
         else:
             return choices[int(p * len(choices))]
-    vhash = np.vectorize(hash) 
+    vhash = np.vectorize(hash) # vectorizing hash function to make it operate on a numpy array
     
-    random_ns = np.fromiter(LCG, dtype=float, count=size)
+    random_ns = np.fromiter(LCG, dtype=float, count=size) #from generator LCG draw (size) random numbers
     return vhash(random_ns) 
 
 
 def RandomWalk(steps, RNG='npRNG'): 
+    '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
     walks = np.zeros((steps,3))
     if RNG=='LCG':
         dims = random_choice(3, size=steps)
@@ -47,6 +48,7 @@ def RandomWalk(steps, RNG='npRNG'):
     walks[np.arange(steps), dims] = ahead
 
     pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
+    # returning a 2D array of size (steps, 3)
     return pos
 
 def pos_to_sampled_MSD(N, steps, sample_indices, RNG):
@@ -62,7 +64,7 @@ def samppling(N, walk_steps, sample_steps, RNG):
 
     print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
     
-    MSD_mean = np.sum(pos_to_sampled_MSD(N, walk_steps, sample_indices, RNG)) / N
+    MSD_mean = np.sum( pos_to_sampled_MSD(N, walk_steps, sample_indices, RNG) ) / N
 
     return sample_indices, MSD_mean
 
