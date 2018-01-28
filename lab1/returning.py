@@ -1,13 +1,23 @@
 import numpy as np
-from lab1 import RandomWalk
-from tools.logger import logging_dict
-from numba import jit
+from tools.logger import logging_dict, logging_time
+
+def RandomWalk(steps , dim=3): 
+    '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
+    walks = np.zeros((steps,dim), dtype=int)
+    dims = np.random.choice(dim, size=steps)
+    ahead = np.random.choice([-1,1], size=steps)
+    
+    walks[np.arange(steps), dims] = ahead
+
+    pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
+    # returning a 2D array of size (steps, 3)
+    return pos
 
 
 def has_returned(n, dim=3):
     ''' Check if a random walk of n steps has returned to its origin point or not'''
     while True:
-        pos = RandomWalk(n, dim=dim, RNG='npRNG')
+        pos = RandomWalk(n, dim=dim) 
         matches = np.all(np.zeros(dim) == pos, axis=1)
         exist_match = np.any( matches )
         yield exist_match
@@ -19,7 +29,7 @@ def get_Prob(N, gen):
         results = np.fromiter( gen, dtype=int, count=N )
         yield sum(results) / N 
 
-
+@logging_time
 def m_results(m):
    
     N = 10000
@@ -35,8 +45,7 @@ def m_results(m):
     std = results.std() 
 
     logging_dict(locals())
-    return results, mean, std
+    print(results, mean, std)
 
-print(m_results(10))
-
+m_results(10)
 

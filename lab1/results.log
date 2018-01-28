@@ -12,3 +12,7 @@
 2018-01-28 17:22:14,188 - duration : 0.13134407997131348
 2018-01-28 17:27:07,781 - std: 0.00507960628395547, mean: 0.33784000000000003, results: [ 0.3343  0.3433  0.3376  0.3376  0.328   0.3376  0.3475  0.3366  0.3345
   0.3414], prob_gen: <generator object get_Prob at 0x118843308>, return_gen: <generator object has_returned at 0x1188432b0>, dim: 3, n: 20000, N: 10000, m: 10
+2018-01-28 18:38:20,932 - std: 0.0412310562561766, mean: 0.36, results: [ 0.35  0.33  0.36  0.44  0.31  0.4   0.35  0.41  0.31  0.34], prob_gen: <generator object get_Prob at 0x106f02360>, return_gen: <generator object has_returned at 0x106f02308>, dim: 3, n: 20000, N: 100, m: 10
+2018-01-28 18:38:20,933 - duration : 1.7714591026306152
+2018-01-28 18:38:52,992 - std: 0.038522720568516446, mean: 0.346, results: [ 0.35  0.37  0.33  0.31  0.31  0.32  0.35  0.37  0.31  0.44], prob_gen: <generator object get_Prob at 0x11239e360>, return_gen: <generator object has_returned at 0x11239e308>, dim: 3, n: 20000, N: 100, m: 10
+2018-01-28 18:38:52,993 - duration : 1.6680541038513184
