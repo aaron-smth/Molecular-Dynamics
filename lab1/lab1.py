@@ -3,16 +3,16 @@ import numpy as np
 from scipy.optimize import curve_fit
 from tools.logger import logging_time, logging_dict, logging_number
 
-logging_number()
 def LCG():
     '''LCG Random Number generator'''
     # seed, a, c, m are all prime numbers, to avoid periodicity
     state = 4211 # This is the seed
 
     a = 1559
-    c = 313
+    c = 647
     m = 13229
-
+    
+    logging_number()
     logging_dict(locals())
 
     while True:
@@ -35,14 +35,14 @@ def random_choice(choices, size=1):
     return vhash(random_ns) 
 
 
-def RandomWalk(steps, RNG='npRNG'): 
+def RandomWalk(steps, RNG='npRNG', dim=3): 
     '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
-    walks = np.zeros((steps,3))
+    walks = np.zeros((steps,dim), dtype=int)
     if RNG=='LCG':
-        dims = random_choice(3, size=steps)
+        dims = random_choice(dim, size=steps)
         ahead = random_choice([-1,1], size=steps)
     elif RNG=='npRNG':
-        dims = np.random.choice(3, size=steps)
+        dims = np.random.choice(dim, size=steps)
         ahead = np.random.choice([-1,1], size=steps)
     
     walks[np.arange(steps), dims] = ahead
