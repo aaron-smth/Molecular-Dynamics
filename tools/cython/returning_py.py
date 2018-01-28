@@ -1,7 +1,5 @@
 import numpy as np
 from tools.logger import logging_dict, logging_time
-from tools.parallel import N_process
-import time
 
 def RandomWalk(steps , dim=3): 
     '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
@@ -15,18 +13,21 @@ def RandomWalk(steps , dim=3):
     # returning a 2D array of size (steps, 3)
     return pos
 
-def has_returned(n, dim=3, size=1):
-    '''setting numpy seed for different generator, or else they will have the same seed'''
-    t = time.time()
-    seed = int((t - int(t)) * 1000000)
-    np.random.seed( seed)
 
+def has_returned(n, dim=3):
     ''' Check if a random walk of n steps has returned to its origin point or not'''
-    for i in range(size):
+    while True:
         pos = RandomWalk(n, dim=dim) 
         matches = np.all(np.zeros(dim) == pos, axis=1)
         exist_match = np.any( matches )
         yield exist_match
+
+
+def get_Prob(N, gen):
+    '''Conducting a Monte Carlo test of N particles'''
+    while True:
+        results = np.fromiter( gen, dtype=int, count=N )
+        yield sum(results) / N 
 
 @logging_time
 def m_results(m):
@@ -34,13 +35,11 @@ def m_results(m):
     N = 10000
     n = 20000
     dim = 3
+    return_gen =  has_returned(n, dim=dim)
+    prob_gen = get_Prob(N, return_gen)
    
-    func = lambda :sum( has_returned(n, dim, N) ) / N 
+    results = np.fromiter(prob_gen, dtype=float, count=m)
     
-    '''using python package multiprocessing to fasten the process'''   
-    results = N_process(func, m)
-
-    results = np.array(results)
     mean = results.mean()
 
     std = results.std() 

@@ -34,7 +34,6 @@ def random_choice(choices, size=1):
     random_ns = np.fromiter(LCG, dtype=float, count=size) #from generator LCG draw (size) random numbers
     return vhash(random_ns) 
 
-
 def RandomWalk(steps, RNG='npRNG', dim=3): 
     '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
     walks = np.zeros((steps,dim), dtype=int)
@@ -51,6 +50,8 @@ def RandomWalk(steps, RNG='npRNG', dim=3):
     # returning a 2D array of size (steps, 3)
     return pos
 
+
+'''Below are all testing code'''
 def pos_to_sampled_MSD(N, steps, sample_indices, RNG):
     for i in range(N):
         pos = RandomWalk(steps, RNG)[sample_indices,:]
@@ -63,6 +64,7 @@ def samppling(N, walk_steps, sample_steps, RNG):
     sample_indices = np.arange(sample_size) * sample_steps
 
     print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
+    
     
     MSD_mean = np.sum( pos_to_sampled_MSD(N, walk_steps, sample_indices, RNG) ) / N
 
@@ -108,7 +110,8 @@ def plot_linear():
 
 # writting the XYZ file
 def write_to_XYZ():
-    steps = 5000
+    '''Write a XYZ file using LCG and npRNG'''
+    steps = 10000
     LCG_walk = RandomWalk(steps, 'LCG')
     npRNG_walk = RandomWalk(steps, 'npRNG')
     from tools.XYZ_format import write_XYZ
