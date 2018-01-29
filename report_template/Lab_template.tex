@@ -7,6 +7,7 @@
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage[margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
 
 \title{3D Random Walk}
 \author{LYU Liuke}
@@ -21,6 +22,15 @@
 
 \subsection{Random Number Generator}
 
+The random number generator implemented here is a simple Linear Congruential
+Generator(LCG), which is generally a recursive mapping within a certain integer
+domain. for a set of parameters (a,c,m):
+
+\begin{align*}
+  x_{N+1} &= (x_N * a + c) \mod m \\
+  \xi \colon \{1,2,3,\dots,m-1\} &\to \{1,2,3,\dots,m-1\}
+\end{align*}
+
 \subsection{Random Walk}
 
 \section{Code}
@@ -29,8 +39,19 @@
 
 \subsection{3D Random Walk}
 
+\subsection{P\'olya's Random Walk Constants}
+
 \section{Results and Analysis}
 
 \section{Conclusion}
 
 \end{document}
+
+\iffalse
+  Your Report should include
+- Brief introduction of random number generator and random walk (less than one page)
+- Present the parameter you used and outline your codes
+- Results and analysis. (Proper figures or tables should be included to show the results)
+- Conclusion
+
+\fi

@@ -1,5 +1,5 @@
 import numpy as np
-from tools.logger import logging_dict, logging_time
+from tools.logger import logging_dict, logging_time, logging_number
 from tools.parallel import N_process
 import time
 
@@ -30,10 +30,11 @@ def has_returned(n, dim=3, size=1):
 
 @logging_time
 def m_results(m):
+    logging_number()
    
     N = 10000
     n = 20000
-    dim = 3
+    dim = 5
    
     func = lambda :sum( has_returned(n, dim, N) ) / N 
     

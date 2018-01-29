@@ -1,5 +1,5 @@
 10000
-a random walk of 5000 steps using LCG random number generator
+a random walk of 10000 steps using LCG random number generator
 C -1 0 0
 C 0 0 0
 C 0 0 1

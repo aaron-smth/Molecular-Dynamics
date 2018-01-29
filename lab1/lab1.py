@@ -2,17 +2,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from tools.logger import logging_time, logging_dict, logging_number
+import time
 
 def LCG():
     '''LCG Random Number generator'''
     # seed, a, c, m are all prime numbers, to avoid periodicity
-    state = 4211 # This is the seed
-
     a = 1559
     c = 647
     m = 13229
     
-    logging_number()
+    t = time.time()
+    state = int(  (t - int(t)) * 10000  ) % m# This is the seed
+
+      
     logging_dict(locals())
 
     while True:
@@ -63,7 +65,7 @@ def samppling(N, walk_steps, sample_steps, RNG):
     sample_size = walk_steps // sample_steps
     sample_indices = np.arange(sample_size) * sample_steps
 
-    print('taking the mean date of {} particles, each walking {} steps, sampling every {} steps'.format(N, walk_steps, sample_steps))
+    print(f'taking the mean date of {N} particles, each walking {walk_steps} steps, sampling every {sample_steps} steps')
     
     
     MSD_mean = np.sum( pos_to_sampled_MSD(N, walk_steps, sample_indices, RNG) ) / N
@@ -72,13 +74,14 @@ def samppling(N, walk_steps, sample_steps, RNG):
 
 @logging_time #recording the runtime of this function and recording it in results.log
 def linearity_test(RNG, ax):
+    logging_number()
     '''1.Generate a 500 particle system, each walking 5000 steps, sampled every 10 steps
        2.Finding the MSD of this system
        3.Linear fit the function (N,MSD) using scipy.optimize.curve_fit
        4.Plotting the fitting line and the data'''
  
     print('Linear fitting of random walk')
-    print('RNG: {}'.format(RNG))
+    print(f'RNG: {RNG}')
     xs, ys = samppling(500, 5000, 10, RNG)
 
     def f(x, slope):
@@ -89,9 +92,9 @@ def linearity_test(RNG, ax):
     parameters, std = curve_fit(f, xs, ys)
     yfit = f(xs, *parameters) # the MSD of the fitted line
  
-    print('standard error: {}'.format(*std))
-    print('slope: {}'.format(*parameters))
-    print('expected slope: 3\n')
+    print(f'standard error: {std[0][0]}')
+    print(f'slope: {parameters[0]}')
+    print('expected slope: 1\n')
  
     logging_dict(locals()) #recording the results of this test 
 
@@ -100,12 +103,12 @@ def linearity_test(RNG, ax):
     ax.plot(xs, yfit, color='red', alpha=0.7, label='linear fitting')
 
 # plotting the linear fitting of N walks
-def plot_linear():
+def plot_linear(fname):
     '''Plotting the two test together'''
     fig, axes = plt.subplots(nrows=1,ncols=2, sharey=True, figsize=(12, 4))
     linearity_test('LCG' ,axes[0] )
     linearity_test('npRNG', axes[1], )
-    plt.show(fig)
+    fig.savefig(fname)
 
 # writting the XYZ file
 def write_to_XYZ():
@@ -114,11 +117,11 @@ def write_to_XYZ():
     LCG_walk = RandomWalk(steps, 'LCG')
     npRNG_walk = RandomWalk(steps, 'npRNG')
     from tools.XYZ_format import write_XYZ
-    write_XYZ('LCG.xyz', 'a random walk of 5000 steps using LCG random number generator', LCG_walk)
-    write_XYZ('npRNG.xyz', 'a random walk of 5000 steps using numpy random number generator', npRNG_walk)
+    write_XYZ('LCG.xyz', f'a random walk of {steps} steps using LCG random number generator', LCG_walk)
+    write_XYZ('npRNG.xyz', f'a random walk of {steps} steps using numpy random number generator', npRNG_walk)
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    plot_linear()
-    #write_to_XYZ()
+    plot_linear('linear.pdf')
+    # write_to_XYZ()
 

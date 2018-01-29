@@ -3,7 +3,7 @@ import os
 
 def write_head(fname, N, head):
     with open(fname, 'w') as f:
-        f.write('{}\n'.format(N))
+        f.write(f'{N}\n')
         f.write(head+'\n')
 
 def write_atoms(fname, atom_coords, names=None):
@@ -12,16 +12,16 @@ def write_atoms(fname, atom_coords, names=None):
             if names==None:
                 atom = ['C']+[str(i) for i in atom]
             line = ' '.join(atom)
-            f.write('{}\n'.format(line))
+            f.write(f'{line}\n'
 
 def write_XYZ(fname, description, coordinates_arr):
     head = './XYZ/'
     os.makedirs(head, exist_ok=True)
 
-    print('writing file {}'.format(fname))
+    print('writing file {fname}')
 
     N = len(coordinates_arr)
-    print('Particle number: {}\n description: {}'.format(N,description))
+    print('Particle number: {N}\n description: {description}')
 
     write_head(head + fname, N, description)
     write_atoms(head + fname, coordinates_arr)
