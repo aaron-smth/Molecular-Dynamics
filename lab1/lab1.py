@@ -106,7 +106,6 @@ def plot_linear():
     linearity_test('LCG' ,axes[0] )
     linearity_test('npRNG', axes[1], )
     plt.show(fig)
-    print('The seed is predetermined for function LCG, so the slope of LCG is the same everytime, but npRNG changes everytime you run')
 
 # writting the XYZ file
 def write_to_XYZ():
