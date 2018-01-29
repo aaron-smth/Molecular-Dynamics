@@ -31,7 +31,26 @@ domain. for a set of parameters (a,c,m):
   \xi \colon \{1,2,3,\dots,m-1\} &\to \{1,2,3,\dots,m-1\}
 \end{align*}
 
+Some special sets of (a,c,m) give seemingly very random and uniform distribution
+of results in recursive mapping. Based on this feature, we consider this recursive 
+method as a random number generator. \\
+
+In this experiment (a=1559, c=647, m=13229) are chosen. 
+The main characteristic of these parameters is that they are all primes, in order
+to try to avoid periodicity behaviors in the random sequance.
+This special set is chosen by testing different combinations of (a,c,m) in a
+small parameter space.
+
 \subsection{Random Walk}
+  
+A random walk, in simple terms, is a random sequance representing the 
+accumulative sum of a random variable. In a simple 3D case:
+
+\begin{align*}
+  \vec{X_n} &= \sum_{i=1}^{n} \vec{s_i} \\
+  \mbox{where} \quad  \vec{s} \in V &= \{(1,0,0), (-1,0,0), (0,1,0), (0,-1,0), (0,0,1),(0,0,-1)\} \\
+  \mbox{Assigning} \quad P(\vec{v}) &\equiv 1/6 \quad \mbox{for}  \quad \vec{v } \quad \mbox{in} \quad V
+\end{align*}
 
 \section{Code}
 
@@ -39,7 +58,9 @@ domain. for a set of parameters (a,c,m):
 
 \subsection{3D Random Walk}
 
-\subsection{P\'olya's Random Walk Constants}
+\section{Application}
+
+\subsection{P\'olya's Random Walk Problem}
 
 \section{Results and Analysis}
 

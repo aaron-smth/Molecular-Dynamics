@@ -4,6 +4,7 @@ from scipy.optimize import curve_fit
 from tools.logger import logging_time, logging_dict, logging_number
 import time
 
+
 def LCG():
     '''LCG Random Number generator'''
     # seed, a, c, m are all prime numbers, to avoid periodicity

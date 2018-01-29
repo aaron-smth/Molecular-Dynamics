@@ -32,9 +32,10 @@ def has_returned(n, dim=3, size=1):
 def m_results(m):
     logging_number()
    
+    '''N:number of particles, n:steps'''
     N = 10000
     n = 20000
-    dim = 5
+    dim = 3
    
     func = lambda :sum( has_returned(n, dim, N) ) / N 
     
