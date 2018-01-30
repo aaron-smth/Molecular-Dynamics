@@ -1,0 +1,16 @@
+def LCG():
+    '''LCG Random Number generator'''
+    # seed, a, c, m are all prime numbers, to avoid periodicity
+    a = 1559
+    c = 647
+    m = 13229
+
+    t = time.time()
+    state = int(  (t - int(t)) * 10000  ) % m # This is the seed
+
+    logging_dict(locals()) # recording the parameters in 'results.log'
+
+    '''LCG is a generator object'''
+    while True:
+        yield state / m
+        state = (a*state+c) % m

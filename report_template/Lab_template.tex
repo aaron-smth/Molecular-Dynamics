@@ -8,6 +8,7 @@
 \usepackage{amsmath}
 \usepackage[margin=2cm]{geometry}
 \usepackage[T1]{fontenc}
+\usepackage{listings}
 
 \title{3D Random Walk}
 \author{LYU Liuke}
@@ -17,6 +18,7 @@
 
 \maketitle
 \tableofcontents
+\clearpage
 
 \section{Introduction}
 
@@ -47,14 +49,25 @@ A random walk, in simple terms, is a random sequance representing the
 accumulative sum of a random variable. In a simple 3D case:
 
 \begin{align*}
-  \vec{X_n} &= \sum_{i=1}^{n} \vec{s_i} \\
+  \vec{X_N} &= \sum_{i=1}^{n} \vec{s_i} \\
   \mbox{where} \quad  \vec{s} \in V &= \{(1,0,0), (-1,0,0), (0,1,0), (0,-1,0), (0,0,1),(0,0,-1)\} \\
-  \mbox{Assigning} \quad P(\vec{v}) &\equiv 1/6 \quad \mbox{for}  \quad \vec{v } \quad \mbox{in} \quad V
+  \mbox{Assigning} \quad P(\vec{v}) &\equiv 1/6 \quad \mbox{for}  \quad \vec{v} \in V
 \end{align*}
 
+Probability analysis give this famous relationship:
+
+\begin{align*}
+  <|\vec{X_N}|^2> = \sqrt{N} 
+\end{align*}
+
+This relationship can be verified by a Monte Carlo Method, averaging the results
+over a large number of samples. Alternatively, we can use it to evaluate the 
+randomness of our LCG generator.
 \section{Code}
 
 \subsection{Linear Congruential Generator}
+
+\lstinputlisting[language=Python,firstline=8, lastline=23]{lab1.py}
 
 \subsection{3D Random Walk}
 

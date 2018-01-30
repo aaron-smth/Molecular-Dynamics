@@ -12,12 +12,12 @@ def LCG():
     c = 647
     m = 13229
     
-    t = time.time()
-    state = int(  (t - int(t)) * 10000  ) % m# This is the seed
-
-      
-    logging_dict(locals())
-
+    t = time.time() #Using current time to set the seed
+    state = int(  (t - int(t)) * 10000  ) % m 
+ 
+    logging_dict(locals()) #Recording the parameters in results.log
+    
+    '''LCG is a generator object'''
     while True:
         yield state / m 
         state = (a*state+c) % m

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.10.26)  29 JAN 2018 21:29
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.10.26)  30 JAN 2018 01:51
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -119,21 +119,46 @@ Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
 File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding T1 on input line 48.
 ))
+(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count102
+\lst@gtempboxa=\box28
+\lst@token=\toks21
+\lst@length=\count103
+\lst@currlwidth=\dimen120
+\lst@column=\count104
+\lst@pos=\count105
+\lst@lostspace=\dimen121
+\lst@width=\dimen122
+\lst@newlines=\count106
+\lst@lineno=\count107
+\lst@maxwidth=\dimen123
+
+(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2015/06/04 1.6 (Carsten Heinz)
+\c@lstnumber=\count108
+\lst@skipnumbers=\count109
+\lst@framebox=\box29
+)
+(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2015/06/04 1.6 listings configuration
+))
+Package: listings 2015/06/04 1.6 (Carsten Heinz)
+
 (./Lab_template.aux)
 \openout1 = `Lab_template.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
+LaTeX Font Info:    ... okay on input line 17.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -169,45 +194,57 @@ LaTeX Font Info:    ... okay on input line 16.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
+\c@lstlisting=\count110
 (./Lab_template.toc)
 \tf@toc=\write3
 \openout3 = `Lab_template.toc'.
 
+ [1
 
-Underfull \hbox (badness 10000) in paragraph at lines 34--37
+{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Underfull \hbox (badness 10000) in paragraph at lines 36--39
 
  []
 
-[1
+(/usr/local/texlive/2016/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2015/06/04 1.6 listings language file
+) (./lab1.py
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 16.
+(/usr/local/texlive/2016/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 16.
+) [2
 
-{/usr/local/texlive/2016/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-[2] (./Lab_template.aux) ) 
+] [3]
+(./Lab_template.aux) ) 
 Here is how much of TeX's memory you used:
- 1573 strings out of 493014
- 18860 string characters out of 6133350
- 84476 words of memory out of 5000000
- 5141 multiletter control sequences out of 15000+600000
- 12894 words of font info for 35 fonts, out of 8000000 for 9000
+ 2973 strings out of 493014
+ 38913 string characters out of 6133350
+ 136444 words of memory out of 5000000
+ 6517 multiletter control sequences out of 15000+600000
+ 13580 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 27i,9n,32p,241b,187s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/c
-m-super/cm-super-t1.enc}</usr/local/texlive/2016/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmex10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmmi7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmr7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmsy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/s
-fbx1000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfb
-x1200.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx1
-440.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm100
-0.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm1200.
-pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pf
-b>
-Output written on Lab_template.pdf (2 pages, 150216 bytes).
+ 28i,9n,43p,241b,1286s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2016/texmf-dist/fonts/enc/dvips/cm-su
+per/cm-super-t1.enc}</usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmex10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmmi7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts
+/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmr7.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/c
+msy10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx1
+000.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx120
+0.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfbx1440.
+pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pf
+b></usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
+</usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfrm1728.pfb></
+usr/local/texlive/2016/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb>
+Output written on Lab_template.pdf (3 pages, 175834 bytes).
 PDF statistics:
- 60 PDF objects out of 1000 (max. 8388607)
- 43 compressed objects within 1 object stream
+ 67 PDF objects out of 1000 (max. 8388607)
+ 48 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
