@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import sqrt, log, cos, pi
 from tools.XYZ_format import to_xyz
-from tools.profiler import state_profile
+from tools.profiler import vel_profile
 '''Units
 length: A (Angstrom, 1e-10 m)
 Time: ps (picosecons, 1e-12 s)
@@ -13,33 +13,33 @@ Light speed: c = 3e6 A/ps
 Boltzmann constant: k = 8.617e-5 ev/K
 '''
 
-'''Initialize an ideal gas system'''
-L = 1000
-N = 343 # number of particles 7**3
-m = 39.948 # argon
-T = 800 # in K
-k = 8.617e-5 
-dt = 10
 
-def lattice_pos(L, N):
+'''All my functions take a dictionary that contains all system information
+as an argument'''
+
+def lattice_pos(d):
+    N,L = d['N'], d['L']
     dl = 10 # a buffer distance between wall and the particles at the edge
     n_side = int( N ** (1/3) ) +1 # how many particles on a side
     side_coords = np.linspace(0+dl, L-dl, n_side)
     '''meshgrid side_coordinates to get the coordinates'''
     coords = np.vstack(np.meshgrid(side_coords, side_coords, side_coords)).reshape(3,-1).T
+    coords = coords[:N] # truncate to N particles
     return coords
 
-def Maxwell_vel(N):
+def Maxwell_vel(d):
+    N,k,T,m = d['N'],d['k'],d['T'],d['m']
     sigma = sqrt(k*T/m)
-    def Box_Muller(arr): return sqrt(-2*log(arr[0])) * cos(2*pi*arr[1]) * sigma
+    def Box_Muller(arr): 
+        return sqrt(-2*log(arr[0])) * cos(2*pi*arr[1])
 
     rands = np.random.random( (N,3,2) ) # (particle_id, v_axis, random u1/u2) 
-    vs = np.apply_along_axis(Box_Muller, axis=2, arr=rands)         
+    vs = np.apply_along_axis(Box_Muller, axis=2, arr=rands) * sigma
     return vs
 
-def init_state():
-    xs = lattice_pos(L,N)
-    vs = Maxwell_vel(N)
+def init_state(d):
+    xs = lattice_pos(d)
+    vs = Maxwell_vel(d)
     '''returning a (N, 6) shaped array representing a state'''
     return np.append( xs, vs, axis=1) 
 
@@ -71,7 +71,6 @@ def periodic_wall():
 def move(): 
     state[:,:3] += state[:,3:] * dt
 
-state = init_state()
 def evolve(t):
     '''Unit of t: picosecond'''
     steps = t // dt
@@ -81,6 +80,23 @@ def evolve(t):
             hard_wall()
             #periodic_wall()
             move()
+
+'''some statistics of the system'''
+
+'''Initialize an ideal gas system'''
+sys_dict = {
+    'L' : 1000,
+    'N' : 3430,      # number of particles 7**3
+    'm' : 39.948,    # argon
+    'T' : 200,        # in K
+    'k' : 8.617e-5,
+    'dt' : 10,
+}
+
+state = init_state(sys_dict)
+
 if __name__ == '__main__':
+    pass
     #evolve(10000)
-    state_profile(state) 
+    #np.savetxt('vel.csv', np.linalg.norm(state[3:],axis=1) , delimiter='\n')
+    vel_profile(state[3:])
