@@ -1,3 +1,4 @@
+'''This script no longer applies'''
 import numpy as np
 
 def write_head(fname, N, head):

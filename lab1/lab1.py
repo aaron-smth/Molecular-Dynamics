@@ -124,6 +124,6 @@ def write_to_XYZ():
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    #plot_linear('linear.pdf')
-    write_to_XYZ()
+    plot_linear('linear.pdf')
+    #write_to_XYZ()
 
