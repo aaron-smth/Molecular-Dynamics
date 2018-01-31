@@ -17,7 +17,7 @@ def runtime_profile(f, **kwargs):
     stats.save('callgrind.out', type='callgrind')
 
 
-def vel_profile(vel):
+def vel_profile(vel, d={}):
     import numpy as np
     import matplotlib.pyplot as plt 
     from scipy.stats import maxwell
@@ -25,13 +25,14 @@ def vel_profile(vel):
     #hist, bin_edges = np.histogram(speed, density=True, bins=40) 
     #bin_centers = 0.5* (bin_edges[1:] + bin_edges[:-1])
 
-    xs = np.linspace(0.1,max(speed),100) 
-    parameters = maxwell.fit(speed, floc=0) 
-    print(parameters, speed[:50])
+    xs = np.linspace(0,max(speed),100) 
+    mean, std = maxwell.fit(speed, floc=0) 
+    fit = maxwell.pdf(xs, mean, std)    
+    
+    d['std'] = std
+    d['K.E'] = 0.5 * d['m'] * (sum(speed**2) / d['N'])
+    d['most probable Speed'] = xs[ np.argmax(fit) ]
 
-    plt.hist(speed, normed=True, bins=20)
-    plt.plot(xs, maxwell.pdf(xs, *parameters),color='red')
-    plt.show()
-    return  
-
-
+    plt.hist(speed, normed=True, bins=30)
+    plt.plot(xs, fit, color='red')
+    plt.show() 

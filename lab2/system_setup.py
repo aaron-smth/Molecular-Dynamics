@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import sqrt, log, cos, pi
 from tools.XYZ_format import to_xyz
-from tools.profiler import vel_profile
+from tools.logger import logging_dict
 '''Units
 length: A (Angstrom, 1e-10 m)
 Time: ps (picosecons, 1e-12 s)
@@ -30,8 +30,9 @@ def lattice_pos(d):
 def Maxwell_vel(d):
     N,k,T,m = d['N'],d['k'],d['T'],d['m']
     sigma = sqrt(k*T/m)
+    d['theoretical std'] = sigma
     def Box_Muller(arr): 
-        return sqrt(-2*log(arr[0])) * cos(2*pi*arr[1])
+        return sqrt(-2*log(arr[0])) * cos(2*pi*arr[1])    
 
     rands = np.random.random( (N,3,2) ) # (particle_id, v_axis, random u1/u2) 
     vs = np.apply_along_axis(Box_Muller, axis=2, arr=rands) * sigma
@@ -71,32 +72,64 @@ def periodic_wall():
 def move(): 
     state[:,:3] += state[:,3:] * dt
 
-def evolve(t):
-    '''Unit of t: picosecond'''
+def evolve(t,d, boundary=hard_wall):
+    '''Unit of t: picosecond, t is total runtime'''
+    dt = d['dt']
     steps = t // dt
+    d['t'] = t
+    d['steps'] = steps
     with open('frames.xyz', 'wb') as f:
         for i in range(steps):
             to_xyz(f, 'argon atoms', state, name='Ar')   
-            hard_wall()
-            #periodic_wall()
-            move()
+            boundary()
+            move() 
 
 '''some statistics of the system'''
+def stats(d):
+    d['theoretical most probable speed'] = sqrt(2)*d['std']
+    d['theoretical mean K.E'] = 1.5*d['k']*d['T']
 
-'''Initialize an ideal gas system'''
+def vel_profile(vel, d={}):
+    import matplotlib.pyplot as plt 
+    from scipy.stats import maxwell
+    speed = np.linalg.norm(vel, axis=1) 
+    #hist, bin_edges = np.histogram(speed, density=True, bins=40) 
+    #bin_centers = 0.5* (bin_edges[1:] + bin_edges[:-1])
+
+    xs = np.linspace(0,max(speed),100) 
+    mean, std = maxwell.fit(speed, floc=0) 
+    fit = maxwell.pdf(xs, mean, std)    
+    
+    d['std'] = std
+    d['K.E'] = 0.5 * d['m'] * (sum(speed**2) / d['N'])
+    d['most probable Speed'] = xs[ np.argmax(fit) ]
+
+    plt.hist(speed, normed=True, bins=30)
+    plt.plot(xs, fit, color='red')
+    plt.show()
+
+'''Initialize an ideal gas system
+This dictionary is shared by all functions and modified by all functions
+'''
 sys_dict = {
-    'L' : 1000,
-    'N' : 3430,      # number of particles 7**3
+    'L' : 1000,      # Box size
+    'N' : 343,      # number of particles 7**3
     'm' : 39.948,    # argon
-    'T' : 200,        # in K
-    'k' : 8.617e-5,
-    'dt' : 10,
+    'T' : 200,       # in K
+    'k' : 8.617e-5,  # Boltzmann Constant
+    'dt' : 10,       # time of each step
 }
 
 state = init_state(sys_dict)
-
 if __name__ == '__main__':
-    pass
-    #evolve(10000)
-    #np.savetxt('vel.csv', np.linalg.norm(state[3:],axis=1) , delimiter='\n')
-    vel_profile(state[3:])
+    '''for writting XYZ file'''
+    #evolve(10000, sys_dict, boundary=hard_wall)
+    '''for outputting csv file'''
+    #np.savetxt('vel.csv', np.linalg.norm(state[:,3:],axis=1) , delimiter='\n')
+    '''for plotting velocity profile with matplotlib'''
+    vel_profile(state[:,3:], sys_dict)
+    stats(sys_dict) 
+    '''last step, printing all parameters and logging them in results.log'''
+    logging_dict(sys_dict) 
+
+

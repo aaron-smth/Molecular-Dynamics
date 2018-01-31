@@ -35,7 +35,7 @@ def m_results(m):
     '''N:number of particles, n:steps'''
     N = 10000
     n = 20000
-    dim = 3
+    dim = 5
    
     func = lambda :sum( has_returned(n, dim, N) ) / N 
     

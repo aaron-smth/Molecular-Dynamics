@@ -34,7 +34,7 @@ def m_results(m):
    
     N = 10000
     n = 20000
-    dim = 3
+    dim = 4
     return_gen =  has_returned(n, dim=dim)
     prob_gen = get_Prob(N, return_gen)
    

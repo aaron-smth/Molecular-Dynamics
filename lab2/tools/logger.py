@@ -25,10 +25,13 @@ def logging_number():
 
 def logging_dict(d):
     import sys
-    '''Logging the parameters and outputs of this function'''
-    li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)] # logging varoables that are not too big and not functions
+    '''Logging the parameters and outputs of this function
+    the sys.getsizeof function is to make sure large arrays don't get logged '''
+    li = [(k,v) for k,v in d.items() if sys.getsizeof(v)<1000 and not callable(v)] 
     message = '{}: {}' 
-    logger.info(', '.join([message.format(*tup) for tup in li]))
+    logger.info('\n' + '\n'.join([message.format(*tup) for tup in li]))
+    for k,v in li:
+        print(f'{k}: {v}')
     print('Results Logged')
 
 
