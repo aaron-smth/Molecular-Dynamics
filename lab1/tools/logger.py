@@ -20,7 +20,7 @@ def logging_number():
             result = re.search(pattern, line)
             if result:
                 n = result.group(1)
-                logger.info(f'Experiment {int(n)+1}')
+                logger.info('Experiment {}'.format(int(n)+1))
 
 
 def logging_dict(d):
@@ -41,8 +41,8 @@ def logging_time(func):
         func(*args, **kwargs)        
 
         duration = time.time() - start
-        print(f'duration: {duration}\n')
-        logging.info(f'duration : {duration}')
+        print('duration: {}\n'.format(duration))
+        logging.info('duration : {}'.format(duration)) # logging runtime
     return wrapper
 
 

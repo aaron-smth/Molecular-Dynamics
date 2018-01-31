@@ -1,7 +1,7 @@
 import numpy as np
 import os
 
-def to_xyz(f, description, arr, atom_name='Ar'): 
+def to_xyz(f, description, arr, name='Ar', dfmt='%.5f'): 
 
     N, dim = arr.shape 
 
@@ -10,5 +10,6 @@ def to_xyz(f, description, arr, atom_name='Ar'):
 
     '''remember to use write binary mode '''
     np.savetxt(f, head, fmt='%s')
-    np.savetxt(f, arr, fmt= atom_name+' %.6f'*dim)
+    np.savetxt(f, arr,  fmt=f'{name}' + f' {dfmt}'*dim)
+
 

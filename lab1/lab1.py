@@ -117,12 +117,13 @@ def write_to_XYZ():
     steps = 10000
     LCG_walk = RandomWalk(steps, 'LCG')
     npRNG_walk = RandomWalk(steps, 'npRNG')
-    from tools.XYZ_format import write_XYZ
-    write_XYZ('LCG.xyz', f'a random walk of {steps} steps using LCG random number generator', LCG_walk)
-    write_XYZ('npRNG.xyz', f'a random walk of {steps} steps using numpy random number generator', npRNG_walk)
+    from tools.XYZ_format import to_xyz
+    with open('frames.xyz','wb') as f:
+        to_xyz(f, f'a random walk of {steps} steps using LCG random number generator', LCG_walk, dfmt='%d')
+        to_xyz(f, f'a random walk of {steps} steps using numpy random number generator', npRNG_walk, dfmt='%d')
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    plot_linear('linear.pdf')
-    # write_to_XYZ()
+    #plot_linear('linear.pdf')
+    write_to_XYZ()
 

@@ -66,6 +66,6 @@ def move():
 state = init_state()
 with open('frames.xyz', 'wb') as f:
     for i in range(1000):
-        to_xyz(f, 'argon atoms', state, atom_name='Ar')   
+        to_xyz(f, 'argon atoms', state, name='Ar')   
         hard_bounce()
         move()
