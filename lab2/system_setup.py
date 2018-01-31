@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import sqrt, log, cos, pi
 from tools.XYZ_format import to_xyz
+from tools.profiler import state_profile
 '''Units
 length: A (Angstrom, 1e-10 m)
 Time: ps (picosecons, 1e-12 s)
@@ -16,20 +17,19 @@ Boltzmann constant: k = 8.617e-5 ev/K
 L = 1000
 N = 343 # number of particles 7**3
 m = 39.948 # argon
-T = 500 # in K
+T = 800 # in K
 k = 8.617e-5 
 dt = 10
 
 def lattice_pos(L, N):
-
-    dl = 10
-    n_side = int( N ** (1/3) ) +1
+    dl = 10 # a buffer distance between wall and the particles at the edge
+    n_side = int( N ** (1/3) ) +1 # how many particles on a side
     side_coords = np.linspace(0+dl, L-dl, n_side)
+    '''meshgrid side_coordinates to get the coordinates'''
     coords = np.vstack(np.meshgrid(side_coords, side_coords, side_coords)).reshape(3,-1).T
     return coords
 
 def Maxwell_vel(N):
-
     sigma = sqrt(k*T/m)
     def Box_Muller(arr): return sqrt(-2*log(arr[0])) * cos(2*pi*arr[1]) * sigma
 
@@ -44,28 +44,43 @@ def init_state():
     return np.append( xs, vs, axis=1) 
 
 '''Set up a boundary condition'''
-
-def hard_bounce():
-    
-    def bounce(coord):
-        conditions = np.logical_or(coord[:3]<L, coord[:3]>0)
-        for i in range(3): 
-            if conditions[i]:
-                coord[2+i] *= -1
-    np.apply_along_axis(bounce, axis=0, arr=state)
-
+def hard_wall():
+    '''A velocity fold and a position fold across the wall '''
+    '''state[:, :3] are positions of N particles,
+       state[:, 3:] are velocities of N particles'''
+    ''' I also shift positions to avoid particles bouncing back and 
+    forth outside the box'''
+    cond1 = state[:,:3]>L 
+    cond2 = state[:,:3]<0
+    state[:, :3][cond1] = 2*L - state[:,:3][cond1]
+    state[:, 3:][cond1] *= -1
+    state[:, :3][cond2] *= -1 
+    state[:, 3:][cond2] *= -1
+     
 
 def periodic_wall():
-    pass 
-
+    '''A velocity shift and a position shift of distance L towards the center'''
+    '''state[:, :3] are positions of N particles,
+       state[:, 3:] are velocities of N particles'''
+    cond1 = state[:,:3]>L 
+    cond2 = state[:,:3]<0
+    state[:, :3][cond1] -= L 
+    state[:, :3][cond2] += L
+  
 '''Perform a time evolution of the system'''
 def move(): 
-    state[:,:3] += state[:, 3:] * dt
-
+    state[:,:3] += state[:,3:] * dt
 
 state = init_state()
-with open('frames.xyz', 'wb') as f:
-    for i in range(1000):
-        to_xyz(f, 'argon atoms', state, name='Ar')   
-        hard_bounce()
-        move()
+def evolve(t):
+    '''Unit of t: picosecond'''
+    steps = t // dt
+    with open('frames.xyz', 'wb') as f:
+        for i in range(steps):
+            to_xyz(f, 'argon atoms', state, name='Ar')   
+            hard_wall()
+            #periodic_wall()
+            move()
+if __name__ == '__main__':
+    #evolve(10000)
+    state_profile(state) 
