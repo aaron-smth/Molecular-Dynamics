@@ -1,5 +1,5 @@
 import numpy as np
-from tools.logger import logging_dict, logging_time, logging_number
+from tools.logger import logging_dict, logging_time
 from tools.parallel import N_process
 import time
 
@@ -11,8 +11,7 @@ def RandomWalk(steps , dim=3):
     
     walks[np.arange(steps), dims] = ahead
 
-    pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
-    # returning a 2D array of size (steps, 3)
+    pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step returning a 2D array of size (steps, 3)
     return pos
 
 def has_returned(n, dim=3, size=1):
@@ -28,9 +27,7 @@ def has_returned(n, dim=3, size=1):
         exist_match = np.any( matches )
         yield exist_match
 
-@logging_time
 def m_results(m):
-    logging_number()
    
     '''N:number of particles, n:steps'''
     N = 10000

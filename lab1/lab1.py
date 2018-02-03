@@ -9,7 +9,8 @@ def LCG():
     '''LCG Random Number generator'''
     # seed, a, c, m are all prime numbers, to avoid periodicity
     a = 1559
-    c = 647
+    c = 313  # for unifrom random float step size
+    #c = 647 # for fixed integer step size  
     m = 13229
     
     t = time.time() #Using current time to set the seed
@@ -25,6 +26,17 @@ def LCG():
 #instantiate the LCG
 LCG = LCG()
 
+def RandomWalk_fs(steps, RNG='npRNG', dim=3):
+    '''random walk of uniformly distributed float step sizes'''
+    if RNG=='LCG':
+        walks = np.fromiter(LCG, dtype=float, count= dim * steps).reshape( (steps, dim) )
+    else:
+        walks = np.random.random( (steps, dim) ) 
+    walks = walks * 2 -1
+    pos = np.array(walks).cumsum(axis=0) # cumulative sum of walks in every step
+    return pos 
+
+
 def random_choice(choices, size=1):
     '''Using LCG to randomly choose from a list of objects'''
     def hash(p):
@@ -38,7 +50,7 @@ def random_choice(choices, size=1):
     return vhash(random_ns) 
 
 def RandomWalk(steps, RNG='npRNG', dim=3): 
-    '''Using two random choices, determine the dimension and direction of a (steps) steps walk'''
+    '''random walk of a fixed integer valued step size'''
     walks = np.zeros((steps,dim), dtype=int)
     if RNG=='LCG':
         dims = random_choice(dim, size=steps)
@@ -57,7 +69,7 @@ def RandomWalk(steps, RNG='npRNG', dim=3):
 '''Below are all testing code'''
 def pos_to_sampled_MSD(N, steps, sample_indices, RNG):
     for i in range(N):
-        pos = RandomWalk(steps, RNG)[sample_indices,:]
+        pos = RandomWalk_fs(steps, RNG)[sample_indices,:]
         MSD = np.sum(pos**2, axis=1)
         yield MSD
 
