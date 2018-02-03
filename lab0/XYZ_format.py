@@ -2,6 +2,8 @@ import numpy as np
 import os
 
 def to_xyz(f, description, arr, name='Ar', dfmt='%.5f'): 
+    if len(arr.shape) ==1:
+        arr = np.array([arr])
 
     N, dim = arr.shape 
 

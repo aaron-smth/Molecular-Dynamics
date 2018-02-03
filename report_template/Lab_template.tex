@@ -1,9 +1,4 @@
-%        File: report.tex
-%     Created: Mon Nov 27 07:00 PM 2017 H
-% Last Change: Mon Nov 27 07:00 PM 2017 H
 
-% defining variables to be used
-%
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage[margin=2cm]{geometry}
@@ -69,7 +64,25 @@ randomness of our LCG generator.
 
 \lstinputlisting[language=Python,firstline=8, lastline=23]{lab1.py}
 
+LCG is the linear congruential generator with parameters a=1559, c=647,
+m=13229. The seed of the generator is determined by decimal time. The structure of it
+is a python generator, which is a sequance of predefined operations. This gives a good 
+structure to continuously generate any length of random numbers and also avoids defining
+a global state variable. The outputs of this function (after "yield") is normalized by
+dividing it by m. \\
+
 \subsection{3D Random Walk}
+
+\lstinputlisting[language=Python,firstline=28, lastline=38]{lab1.py}
+
+For a 3 dimensional random walk, every steps needs to be a vector whose direction is
+a random choice among x, y, z axes, and value a choice between (-1,1). That's why we 
+need to implement a random choice function to convert a random number between (0,1) to 
+a random choice in a list.
+
+
+
+\lstinputlisting[language=Python,firstline=40, lastline=54]{lab1.py}
 
 \section{Application}
 
