@@ -86,3 +86,24 @@ K.E: 0.02536506982925571
 most probable Speed: 0.02870068174202479
 theoretical most probable speed: 0.029050727727137356
 theoretical mean K.E: 0.025851
+2018-02-06 13:48:48,016 - 
+L: 1000
+N: 343
+m: 39.948
+T: 200
+k: 8.617e-05
+dt: 10
+theoretical std: 0.020770431725997164
+2018-02-06 13:50:23,225 - 
+L: 1000
+N: 343
+m: 39.948
+T: 200
+k: 8.617e-05
+dt: 10
+theoretical std: 0.020770431725997164
+std: 0.020925644190527042
+K.E: 0.026229515581625205
+most probable Speed: 0.029254020424966585
+theoretical most probable speed: 0.02959332981563711
+theoretical mean K.E: 0.025851

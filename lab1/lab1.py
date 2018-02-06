@@ -95,7 +95,7 @@ def linearity_test(RNG, ax):
  
     print('Linear fitting of random walk')
     print(f'RNG: {RNG}')
-    xs, ys = samppling(500, 5000, 10, RNG)
+    xs, ys = samppling(500, 10000, 10, RNG)
 
     def f(x, slope):
         '''Assuming MSD is proportional to N'''
@@ -141,6 +141,6 @@ def write_to_XYZ():
 
 ### Uncomment to plot
 if __name__ == "__main__":
-    plot_linear('linear.pdf')
+    plot_linear('linear2.pdf')
     #write_to_XYZ()
 

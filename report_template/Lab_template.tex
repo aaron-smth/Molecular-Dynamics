@@ -35,7 +35,7 @@ Some special sets of (a,c,m) give seemingly very random and uniform distribution
 of results in recursive mapping. Based on this feature, we consider this recursive 
 method as a random number generator. 
 
-In this experiment (a=1559, c=647, m=13229) are chosen. 
+In this experiment (a=1559, c=313, m=13229) are chosen. 
 The main characteristic of these parameters is that they are all primes, in order
 to try to avoid periodicity behaviors in the random sequance.
 This special set is chosen by testing different combinations of (a,c,m) in a
@@ -126,11 +126,36 @@ prediction. I conducted this experiment for dimension 1 - 5, the results are as 
 \end{tabular}
 \end{center}
 
+As can be seen, other than the result of dimension 2, the other experimental values match
+the theoretical ones. This is expected, since we can not take an infinite amount of steps
+for run time consideration, the resultant value will be smaller than the theoretical prediction. In our case, 20000 steps is enough for one dimensional case but not for two dimensional case. 
+While in 3, 4, 5 dimensional cases the results match because the probability converge faster as we increase the dimension. 
+
 \section{Results and Analysis}
+
+Using the mean squared distance relationship, we can test the randomness of our LCG 
+generator. By nature, random walks are sequances that have relatively large fluctuations,
+so in oreder to conduct a reasonable test, a large number of samples need to be taken to
+get an average result with relatively small deviations.
+
+Below is a MSD vs N plot of 5000 steps, averaged over 500 particles. Comparing our LCG
+generator with numpy generator:
 
 \includegraphics[width=\textwidth]{linear.pdf}
 
+The slope of the LCG graph is 1.022 while that of numpy generator is 1.009. At least for
+random walk with steps equal or below 5000, our generator gives a reasonably good result Although further investigation showed that beyong 6000 steps, the linearity began to 
+break. This could still be expected since 6000 is almost half of m, which limits the 
+period of our generator.
+
 \section{Conclusion}
+
+To concude, we have implemented a linear congruential random number generator and chosen
+an effective set of parameters so that it remains random for a quite long period of time.
+We then made use of the LCG generator to generate random walk sequances. Averaging over
+many particles, we made a linear plot between MSD and steps of the random walk, which 
+proved that our generator remains quite random below 6000 steps. In addition to this, 
+we also made use of the Random Walk function to help us solve a probability problem.
 
 \begin{thebibliography}{1}
   \bibitem{table} Weisstein,Eric W. "P\'olya's Random Walk Constants." From MathWorldld: A Wolfram Web Resource. http://mathworld.wolfram.com/PolyasRandomWalkConstants.html

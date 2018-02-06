@@ -1,0 +1,38 @@
+The general way of using the code:
+
+1. setting the parameters of the system: 
+
+Temperature, Number of particles, Particle mass ...
+
+Specify them in the 'sys_dict' (a python dictionary object
+
+2. 'state' is automatically initialized 
+
+'state' is an numpy array of shape (number of particles, 6), which specify a state of
+the system (3 pos, 3 vel for each particle) at a given time.
+
+boundary conditions including 'hard_wall', 'periodic_wall', as well as function 'move'
+will change 'state'. so that it gets updated.
+
+2. Three general function of the code:
+
+   1.uncomment #evolve(10000, sys_dict, boundary=hard_wall) to generate a xyz file
+   called 'frames.xyz' containing the snapshots of the system from time 0 to 10000 ps.
+   You can specify the boundary. valid inpua are 'hard_wall' and 'periodic_wall'
+
+   2.uncomment #np.savetxt('vel.csv', ...... to make a .csv file containing the initial
+   speeds of all particles. Later you can do maxwell's fitting using Excel. 
+   I used more particles (3430) in this part to get a better distribution.
+
+   3.The last part, namely vel_profile(state[:,3:], sys_dict), and stats(sys_dict) 
+    is an easier way of doing analysis. It can automatically help you calculate 
+    std, K.E, most probable speed (both real and theoretical) and make a plot of
+    the distribution using matplotlib. 
+
+
+Files:
+
+csv, xyz files are in folder 'data'
+
+folder 'tools' is a little package I wrote to help me with the main part.
+Features are logging the results, minor parallel computation and wrting to xyz format.
