@@ -1,6 +1,6 @@
 import numpy as np
 from numpy import sqrt, log, cos, pi
-from tools.XYZ_format import to_xyz
+from tools.XYZ_format import to_xyz, from_xyz
 from tools.logger import logging_dict, logging_time, progress_bar
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -16,8 +16,9 @@ Argon_radius: 0.71 A
 
 '''All my functions take a dictionary that contains all system information
 as an argument'''
-
+   
 def lattice_pos(d):
+    '''creating initial positions at lattice points, specified by the sys_dict'''
     N,L = d['N'], d['L']
     dl = 0.1*L # a buffer distance between wall and the particles at the edge
     n_side = int( N ** (1/3) ) +1 # how many particles on a side
@@ -38,7 +39,10 @@ def Maxwell_vel(d):
     vs = np.apply_along_axis(Box_Muller, axis=2, arr=rands) * sigma
     return vs
 
-def init_state(d):
+def init_state(d,fromF=False):
+    if fromF:
+        print(f'reading from file {fromF}')
+        return from_xyz(fromF)
     xs = lattice_pos(d)
     vs = Maxwell_vel(d)
     '''returning a (N, 6) shaped array representing a state'''
@@ -117,13 +121,12 @@ def run(d, boundary=hard_wall):
     for i in range( steps ):
         progress_bar(i, steps ) 
         if i%100==0:
-            state_li.append(state[:, :3].copy())
+            state_li.append(state.copy())
         evolve(state,d) 
 
 '''some statistics of the system'''
 
-def save_data(state_li):
-    fname = 'frames.xyz'
+def save_data(state_li, fname): 
     print(f'save data to {fname}')
     with open(fname, 'wb') as f:
         for i,state in enumerate(state_li):
@@ -139,16 +142,16 @@ sys_dict = {
     'm' : 39.948,    # argon
     'T' : 200,       # in K
     'k' : 8.617e-5,  # Boltzmann Constant
-    'steps': 80000,
-    'dt' : 0.01,       # time of each step
+    'steps': 50000,
+    'dt' : 0.002,       # time of each step
 }
 
-state = init_state(sys_dict)
+state = init_state(sys_dict,fromF='frames.xyz')
 state_li = []
 if __name__ == '__main__':
     '''for writting XYZ file'''
     run( sys_dict, boundary=hard_wall)
     '''last step, printing all parameters and logging them in results.log'''
     logging_dict(sys_dict) 
-    save_data(state_li)
+    save_data(state_li, 'frames.xyz')
 
