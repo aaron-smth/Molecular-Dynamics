@@ -1,4 +1,3 @@
-import sys
 import logging 
 import re
 
@@ -50,6 +49,7 @@ def logging_time(func):
     return wrapper
 
 def progress_bar(count, total, status=''):
+    import sys
     bar_len = 60
     filled_len = int(round(bar_len * count / float(total)))
 
