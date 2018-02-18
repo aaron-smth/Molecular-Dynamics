@@ -1,9 +1,2 @@
-General structure of the code:
+This is a repository for a physics lab on molecular dynamics
 
-sys_dict contains all the global system parameters and information different functions need to perform their task. 
-
-state is another global variable, holding the position and velocoty information of the 
-system.
-
-Other than some standard numpy package, I wrote a small package called "tools" myself to
-divide the functions into multiple files and only leave the main program in file MD.py.
