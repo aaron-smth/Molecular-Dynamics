@@ -1,9 +1,7 @@
 import numpy as np
-import sys
 from numpy import sqrt, log, cos, pi
-from tools.XYZ_format import to_xyz, from_xyz
-from tools.logger import logging_dict, logging_time, progress_bar
-from tools.profiler import energy_profile
+import pickle
+from tools import logging_dict, logging_time, progress_bar
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -16,14 +14,10 @@ Light speed: c = 3e6 A/ps
 Boltzmann constant: k = 8.617e-5 ev/K
 Argon_radius: 0.71 A
 '''
-
-'''All my functions take a dictionary that contains all system information
-as an argument'''
-
 class MD_sys:
 
     k = 8.617e-5
-    def __init__(self, N, T, steps, atom_info, dt=0.02):
+    def __init__(self, N, T, steps, atom_info, dt=0.1):
         self.sig = atom_info['sig']
         self.eps = atom_info['eps']
         self.m   = atom_info['m']
@@ -31,8 +25,9 @@ class MD_sys:
         self.T = T
         self.dt = dt
         self.steps = steps # run steps
-        self.L =  self.sig * self.N**(1/3) * 1.05 # box size determined by N
-        self.dl =  0.05 # a buffer distance between wall and the particles at the edge  
+        self.L =  self.sig * self.N**(1/3) * 1.5 # box size determined by N
+        # a buffer distance between wall and the particles at the edge  
+        self.dl =  0.05 * self.L 
 
         self.LJ_memory = np.zeros(3)
         self.V = np.array([])
@@ -72,19 +67,17 @@ class MD_sys:
             vs = self.Maxwell_vel()
             '''returning a (N, 6) shaped array representing a state'''
             self.state = np.append( xs, vs, axis=1) 
+
         print('system info:')
         logging_dict(vars(self))
-        self.state_li = []
-        self.state_li.append(self.state.copy())
+
+        self.state_li = [self.state.copy()]
 
     def hard_wall(self):
         '''A velocity fold across the wall '''
         p,v = self.state[:,:3], self.state[:,3:]
-        cond1 = p>self.L 
-        cond2 = p<0
-        v[cond1] = -abs(v[cond1])
-        v[cond2] = abs(v[cond2]) 
-
+        cond1, cond2 = p>self.L , p<0
+        v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
     def LJ_force(self, new=True):
         '''Lennard-Jones Potential, force calculation'''
@@ -113,7 +106,14 @@ class MD_sys:
             '''recording potential energy every 100 steps'''
             self.V = np.append(self.V , V)
         return fs
-
+    
+    def HeatBath(self):
+        tau = 100 * self.dt
+        T_des = self.T
+        T_now = self.K[-1] * 2 / (3 * self.k) / self.N
+        ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
+        self.state[:, 3:] *= ratio
+         
     
     def Verlet(self):
         '''r_n+1 = r_n + v_n * dt + f_n/2m * (dt)^2
@@ -125,6 +125,7 @@ class MD_sys:
         self.hard_wall()
         f2 = self.LJ_force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
+        self.HeatBath()
 
 
     @logging_time
@@ -137,30 +138,13 @@ class MD_sys:
         '''main program'''
         for i in range( self.steps ):
             progress_bar(i, self.steps ) 
+            self.K = np.append(self.K ,0.5* self.m * np.sum(self.state[:, 3:]**2) )
             self.Verlet()
             if self.count%100==0: # change to 100 in the end
-                self.K = np.append(self.K ,0.5* self.m * np.sum(self.state[:, 3:]**2) )
                 self.E = np.append(self.E , self.K[-1] + self.V[-1] )
-                '''end program if system energy blows up'''
-                if len(self.E)>5 and abs((self.E[-1]-self.E[0])/self.E[0]) > 10:
-                    print('system blows up.')
-                    self.save_data('frames.xyz')
-                    logging_dict(vars(self))
-                    sys.exit() 
                 self.state_li.append(self.state.copy())
             self.count+=1
-
-    def save_data(self,fname):
-        '''saving parameters to results.log'''
-        logging_dict(vars(self))
-        '''saving xyz frames and energy data'''
-        print(f'save data to {fname}')
-        with open(fname, 'wb') as f:
-            for i,state in enumerate(self.state_li):
-                to_xyz(f, f'frame {i}', state, name='Ar')  
-        '''making a energy_profile plot'''
-        self.Ts = self.K / self.N / (1.5* self.k) 
-        energy_profile(vars(self))
+            
 
 Argon_info = {
     'sig':3.40,
@@ -168,6 +152,18 @@ Argon_info = {
     'm':39.948
     }
 
-sys = MD_sys(N=125, T=20, steps=20000, atom_info=Argon_info)
-sys.run()
-sys.save_data('frames.xyz')
+def from_obj(steps, new=True):
+    if not new:
+        with open('sys.obj', 'rb') as f:
+            sys = pickle.load(f)
+        sys.steps = steps
+    else:    
+        sys = MD_sys(N=216, T=100, steps=steps, atom_info=Argon_info)
+    return sys
+
+if __name__=='__main__':
+    sys = from_obj(20000, new=False)
+    sys.run()
+    with open('sys.obj', 'wb') as f:
+        pickle.dump(sys,f) 
+
