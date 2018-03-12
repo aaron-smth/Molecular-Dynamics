@@ -107,3 +107,13 @@ K.E: 0.026229515581625205
 most probable Speed: 0.029254020424966585
 theoretical most probable speed: 0.02959332981563711
 theoretical mean K.E: 0.025851
+2018-03-05 15:52:29,808 - 
+L: 1000
+N: 343
+m: 39.948
+T: 200
+k: 8.617e-05
+dt: 10
+theoretical std: 0.020770431725997164
+t: 10000
+steps: 1000

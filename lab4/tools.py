@@ -27,12 +27,9 @@ def logging_number():
 
 def logging_dict(d):
     import sys
-    '''Logging the parameters and outputs of this function
-    the sys.getsizeof function is to make sure large arrays don't get logged '''
-    li = [(k,v) for k,v in d.items() if type(v) in (int, float)] 
     message = '{}: {}' 
-    logger.info('\n' + '\n'.join([message.format(*tup) for tup in li]) +'\n')
-    for k,v in li:
+    logger.info('\n' + '\n'.join([message.format(*tup) for tup in d.items()]) +'\n')
+    for k,v in d.items():
         print(f'{k}: {v}')
     print('Results Logged\n')
 

@@ -1,6 +1,6 @@
 import numpy as np
-from numpy import sqrt, log, cos, pi
 import pickle
+from numpy import sqrt, log, cos, pi
 from tools import logging_dict, logging_time, progress_bar
 
 '''Units
@@ -25,11 +25,12 @@ class MD_sys:
         self.T = T
         self.dt = dt
         self.steps = steps # run steps
-        self.L =  self.sig * self.N**(1/3) * 1.5 # box size determined by N
+        self.t = self.dt * self.steps 
+        self.L =  self.sig * self.N**(1/3) * 2.5 # box size determined by N 1.5
         # a buffer distance between wall and the particles at the edge  
         self.dl =  0.05 * self.L 
-
-        self.LJ_memory = np.zeros(3)
+    
+        self.F_memory = np.zeros(3)
         self.V = np.array([])
         self.K = np.array([])
         self.E = np.array([])
@@ -58,19 +59,13 @@ class MD_sys:
         return vs
 
     def init_state(self, fromF=False):
-        if fromF:
-            '''loading the last frame of an xyz file and take it as the initial state'''
-            print(f'reading from file {fromF}')
-            self.state = from_xyz(fromF)
-        else:
-            xs = self.lattice_pos()
-            vs = self.Maxwell_vel()
-            '''returning a (N, 6) shaped array representing a state'''
-            self.state = np.append( xs, vs, axis=1) 
-
-        print('system info:')
-        logging_dict(vars(self))
-
+        xs = self.lattice_pos()
+        vs = self.Maxwell_vel()
+        '''returning a (N, 6) shaped array representing a state'''
+        self.state = np.append( xs, vs, axis=1) 
+        '''removing the COM velocity''' 
+        self.state[:, 3:] -= np.mean(self.state[:, 3:], axis=0) 
+        '''copying the first frame'''
         self.state_li = [self.state.copy()]
 
     def hard_wall(self):
@@ -79,11 +74,22 @@ class MD_sys:
         cond1, cond2 = p>self.L , p<0
         v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
-    def LJ_force(self, new=True):
-        '''Lennard-Jones Potential, force calculation'''
+    def LJ(self, r, mode):
+        sig,eps = self.sig, self.eps
+        if mode == 'F':
+            f_mag = -24*eps/r**2 * (2*(sig/r)**12 - (sig/r)**6 )
+            return f_mag
+        elif mode == 'V':
+            V = np.sum(4*eps*( (sig/r)**12 - (sig/r)**6 ))
+            return V
+        else:
+            raise ValueError('invalid choice of mode')
+
+    def force(self, new=True):
+        '''force calculation'''
         if not new:
-            return self.LJ_memory 
-        sig,eps,N,L = self.sig,self.eps,self.N,self.L 
+            return self.F_memory 
+        N,L = self.N, self.L 
 
         pos = self.state[:, :3] 
         fs = np.zeros( (N,3) )
@@ -94,14 +100,14 @@ class MD_sys:
             rs = np.linalg.norm( r_vecs, axis=1 ) 
            
             if self.count%100==0:
-                V += np.sum(4*eps*( (sig/rs)**12 - (sig/rs)**6 ))
-            f_mags = -24*eps/rs**2 * (2*(sig/rs)**12 - (sig/rs)**6 )
-            f = np.multiply( r_vecs, f_mags.reshape( (-1,1) ) )
+                V += self.LJ(rs, mode='V')
+            f_mags = self.LJ(rs, mode='F')
+            f = np.multiply( r_vecs, f_mags.reshape((-1,1)) )
 
             fs[i]    += np.sum( f, axis=0 ) 
             fs[i+1:] -= f
        
-        self.LJ_memory = fs
+        self.F_memory = fs
         if self.count%100==0:
             '''recording potential energy every 100 steps'''
             self.V = np.append(self.V , V)
@@ -109,41 +115,51 @@ class MD_sys:
     
     def HeatBath(self):
         tau = 100 * self.dt
-        T_des = self.T
+        # T_des = self.T
+        T_des = 400/  np.exp(1e-3 * self.dt * self.count)
         T_now = self.K[-1] * 2 / (3 * self.k) / self.N
         ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
         self.state[:, 3:] *= ratio
-         
-    
+          
     def Verlet(self):
         '''r_n+1 = r_n + v_n * dt + f_n/2m * (dt)^2
            v_n+1 = v_n + (f_n + f_n+1)/2m *dt ''' 
-        dt,m = self.dt,self.m 
+        dt , m = self.dt , self.m 
 
-        f1 = self.LJ_force(new=False)
+        f1 = self.force(new=False)
         self.state[:, :3] += self.state[:, 3:] * dt + f1/(2*m) * dt**2
         self.hard_wall()
-        f2 = self.LJ_force()
+        f2 = self.force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
         self.HeatBath()
 
-
     @logging_time
     def run(self):
-        '''Unit of t: picosecond, t is total runtime'''
-        self.t = self.dt * self.steps 
-        '''removing the COM velocity''' 
-        self.state[:, 3:] -= np.mean( self.state[:, 3:], axis=0 ) 
-
         '''main program'''
-        for i in range( self.steps ):
-            progress_bar(i, self.steps ) 
-            self.K = np.append(self.K ,0.5* self.m * np.sum(self.state[:, 3:]**2) )
+        for i in range(self.steps):
+            progress_bar(i, self.steps) 
+            self.K = np.append(self.K ,0.5*self.m*np.sum(self.state[:, 3:]**2))
             self.Verlet()
             if self.count%100==0: # change to 100 in the end
                 self.E = np.append(self.E , self.K[-1] + self.V[-1] )
                 self.state_li.append(self.state.copy())
             self.count+=1
+
+    def __enter__(self):
+        '''before each run, display the system information'''
+        logging_dict(self.short_info)
+
+    @property
+    def short_info(self):
+        return {k:v for k,v in vars(self).items() if type(v) in (int, float)}
+
+    def __str__(self):
+        return self.short_info
+
+    def __exit__(self, exc_type, exc_val, exc_tb): 
+        '''after every run, dump all info into sys.obj'''
+        with open('sys.obj', 'wb') as f:
+            pickle.dump(self, f) 
             
 
 Argon_info = {
@@ -152,18 +168,18 @@ Argon_info = {
     'm':39.948
     }
 
-def from_obj(steps, new=True):
+def make_sys(steps, new=True):
     if not new:
         with open('sys.obj', 'rb') as f:
             sys = pickle.load(f)
         sys.steps = steps
+        sys.t += sys.dt * sys.steps
     else:    
         sys = MD_sys(N=216, T=100, steps=steps, atom_info=Argon_info)
     return sys
 
 if __name__=='__main__':
-    sys = from_obj(20000, new=False)
-    sys.run()
-    with open('sys.obj', 'wb') as f:
-        pickle.dump(sys,f) 
+    sys = make_sys(steps=20000, new=True)
+    with sys:
+        sys.run()
 

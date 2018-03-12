@@ -1,2 +1,19 @@
 This is a repository for a physics lab on molecular dynamics
 
+The script MD.py is the main MD part.
+In it the class MD_sys is the molecular dynamics system,
+it can be run either from a new initial condition it generats or from an existing MD_sys object or from an existin MD_sys object.
+After each run, it stores all the information in an file called sys.obj
+
+The script st.py is the statistical analysis part.
+It loads the object sys.obj, make statistical quantities and generates plots.
+
+This design allows one to divide a very time consuming job into multiple small
+runs so as to get feedbacks in time. Also, it is very helpful to divide the main
+calculation from the statistics, as often we'd like to modify the 
+statistical part (perhapes to add more features) and wouldn't want to run the whole 
+program again.
+
+The script tools.py contain some other small functions I used to help converting files,
+recording information and so on.
+The plots are saved in the energy.pdf file
