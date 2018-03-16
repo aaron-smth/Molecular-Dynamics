@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
-from numpy import sqrt, log, cos, pi
+from numpy import sqrt, log, sin, cos, pi, exp
 from tools import logging_dict, logging_time, progress_bar
+from tersoff import tersoff_F, tersoff_V
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -12,21 +13,19 @@ Mass: u (atomic mass, 931.49 Mev/c^2)
 derived quantities:
 Light speed: c = 3e6 A/ps
 Boltzmann constant: k = 8.617e-5 ev/K
-Argon_radius: 0.71 A
+Carbon_radius: 1.7 A
 '''
 class MD_sys:
 
     k = 8.617e-5
-    def __init__(self, N, T, steps, atom_info, dt=0.1):
-        self.sig = atom_info['sig']
-        self.eps = atom_info['eps']
-        self.m   = atom_info['m']
+    def __init__(self, N, T, steps, atom_info, dt=0.002):
+        self.m = atom_info['m']
         self.N = N
         self.T = T
         self.dt = dt
         self.steps = steps # run steps
         self.t = self.dt * self.steps 
-        self.L =  self.sig * self.N**(1/3) * 2.5 # box size determined by N 1.5
+        self.L = atom_info['bondLength'] * N**(1/2) * 3 # box size 
         # a buffer distance between wall and the particles at the edge  
         self.dl =  0.05 * self.L 
     
@@ -47,6 +46,9 @@ class MD_sys:
         coords = np.vstack(np.meshgrid(side_coords, side_coords, side_coords)).reshape(3,-1).T
         coords = coords[:N] # truncate to N particles
         return coords
+    
+    def hexagon_pos(self):
+        N, L, dl = self.N, self.L, self.dl
 
     def Maxwell_vel(self):
         N,k,T,m = self.N, self.k, self.T, self.m 
@@ -74,49 +76,24 @@ class MD_sys:
         cond1, cond2 = p>self.L , p<0
         v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
-    def LJ(self, r, mode):
-        sig,eps = self.sig, self.eps
-        if mode == 'F':
-            f_mag = -24*eps/r**2 * (2*(sig/r)**12 - (sig/r)**6 )
-            return f_mag
-        elif mode == 'V':
-            V = np.sum(4*eps*( (sig/r)**12 - (sig/r)**6 ))
-            return V
-        else:
-            raise ValueError('invalid choice of mode')
-
     def force(self, new=True):
         '''force calculation'''
         if not new:
             return self.F_memory 
-        N,L = self.N, self.L 
 
         pos = self.state[:, :3] 
-        fs = np.zeros( (N,3) )
+        f = tersoff_F(pos)
+        self.F_memory = f
 
-        V = 0 # potentia energy
-        for i in range(N-1):
-            r_vecs = pos[i+1:, :] - pos[i, :]
-            rs = np.linalg.norm( r_vecs, axis=1 ) 
-           
-            if self.count%100==0:
-                V += self.LJ(rs, mode='V')
-            f_mags = self.LJ(rs, mode='F')
-            f = np.multiply( r_vecs, f_mags.reshape((-1,1)) )
-
-            fs[i]    += np.sum( f, axis=0 ) 
-            fs[i+1:] -= f
-       
-        self.F_memory = fs
         if self.count%100==0:
             '''recording potential energy every 100 steps'''
+            V = tersoff_V(pos) 
             self.V = np.append(self.V , V)
-        return fs
+        return f
     
     def HeatBath(self):
         tau = 100 * self.dt
-        # T_des = self.T
-        T_des = 400/  np.exp(1e-3 * self.dt * self.count)
+        T_des = self.T
         T_now = self.K[-1] * 2 / (3 * self.k) / self.N
         ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
         self.state[:, 3:] *= ratio
@@ -131,7 +108,7 @@ class MD_sys:
         self.hard_wall()
         f2 = self.force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
-        self.HeatBath()
+        #self.HeatBath()
 
     @logging_time
     def run(self):
@@ -160,13 +137,11 @@ class MD_sys:
         '''after every run, dump all info into sys.obj'''
         with open('sys.obj', 'wb') as f:
             pickle.dump(self, f) 
-            
 
-Argon_info = {
-    'sig':3.40,
-    'eps':1.03e-2,
-    'm':39.948
-    }
+Carbon_info = {
+        'm':12.0107, #u
+        'bondLength':1.42 #A
+        }
 
 def make_sys(steps, new=True):
     if not new:
@@ -175,7 +150,7 @@ def make_sys(steps, new=True):
         sys.steps = steps
         sys.t += sys.dt * sys.steps
     else:    
-        sys = MD_sys(N=216, T=100, steps=steps, atom_info=Argon_info)
+        sys = MD_sys(N=5, T=10, steps=steps, atom_info=Carbon_info)
     return sys
 
 if __name__=='__main__':

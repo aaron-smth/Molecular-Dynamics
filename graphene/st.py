@@ -23,7 +23,7 @@ class MD_sys(MD_sys):
     
     def save_data(self, fname):
         '''saving parameters to results.log'''
-        logging_dict(vars(self))
+        logging_dict(self.short_info)
         '''saving xyz frames and energy data'''
         print(f'save data to {fname}')
         with open(fname, 'wb') as f:

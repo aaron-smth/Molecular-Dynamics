@@ -1,7 +1,9 @@
 import numpy as np
 import pickle
 from numpy import sqrt, log, cos, pi
+from scipy.spatial.distance import pdist, squareform   
 from tools import logging_dict, logging_time, progress_bar
+
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -74,49 +76,50 @@ class MD_sys:
         cond1, cond2 = p>self.L , p<0
         v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
-    def LJ(self, r, mode):
+    def LJ_F(self, r):
         sig,eps = self.sig, self.eps
-        if mode == 'F':
-            f_mag = -24*eps/r**2 * (2*(sig/r)**12 - (sig/r)**6 )
-            return f_mag
-        elif mode == 'V':
-            V = np.sum(4*eps*( (sig/r)**12 - (sig/r)**6 ))
-            return V
-        else:
-            raise ValueError('invalid choice of mode')
+        f_mag = -24*eps/r**2 * (2*(sig/r)**12 - (sig/r)**6 )
+        return f_mag
+
+    def LJ_V(self, r):
+        sig,eps = self.sig, self.eps
+        V = 4*eps*( (sig/r)**12 - (sig/r)**6 )
+        return V
+
+    def pairF(self, r_vec):  
+        '''an optimized pairwise force calculation'''
+        sep = r_vec[np.newaxis, :] - r_vec[:, np.newaxis]
+
+        dist = pdist(r_vec)
+        force = self.LJ_F(dist)
+        force = squareform(force)
+        return np.einsum('ijk,ij->ik', sep, force)
+
+    def pairV(self, r_vec):
+        '''an optimized pairwise potential calculation'''
+        dist = pdist(r_vec) 
+        V = self.LJ_V(dist)
+        return np.sum(V) 
 
     def force(self, new=True):
         '''force calculation'''
         if not new:
             return self.F_memory 
-        N,L = self.N, self.L 
+     
+        r_vec = self.state[:, :3]
+        f = self.pairF(r_vec)     
+        self.F_memory = f
 
-        pos = self.state[:, :3] 
-        fs = np.zeros( (N,3) )
-
-        V = 0 # potentia energy
-        for i in range(N-1):
-            r_vecs = pos[i+1:, :] - pos[i, :]
-            rs = np.linalg.norm( r_vecs, axis=1 ) 
-           
-            if self.count%100==0:
-                V += self.LJ(rs, mode='V')
-            f_mags = self.LJ(rs, mode='F')
-            f = np.multiply( r_vecs, f_mags.reshape((-1,1)) )
-
-            fs[i]    += np.sum( f, axis=0 ) 
-            fs[i+1:] -= f
-       
-        self.F_memory = fs
         if self.count%100==0:
             '''recording potential energy every 100 steps'''
+            V = self.pairV(r_vec)
             self.V = np.append(self.V , V)
-        return fs
+        return f
     
     def HeatBath(self):
         tau = 100 * self.dt
-        # T_des = self.T
-        T_des = 400/  np.exp(1e-3 * self.dt * self.count)
+        T_des = self.T
+        #T_des = 400/  np.exp(1e-3 * self.dt * self.count)
         T_now = self.K[-1] * 2 / (3 * self.k) / self.N
         ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
         self.state[:, 3:] *= ratio
@@ -175,7 +178,7 @@ def make_sys(steps, new=True):
         sys.steps = steps
         sys.t += sys.dt * sys.steps
     else:    
-        sys = MD_sys(N=216, T=100, steps=steps, atom_info=Argon_info)
+        sys = MD_sys(N=100, T=10, steps=steps, atom_info=Argon_info)
     return sys
 
 if __name__=='__main__':
