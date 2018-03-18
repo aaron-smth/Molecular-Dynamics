@@ -121,7 +121,7 @@ class MD_sys:
             progress_bar(i, self.steps) 
             self.K = np.append(self.K ,0.5*self.m*np.sum(self.state[:, 3:]**2))
             self.Verlet()
-            if self.count%100==0: # change to 100 in the end
+            if self.count%20==0: # change to 100 in the end
                 self.E = np.append(self.E , self.K[-1] + self.V[-1] )
                 self.state_li.append(self.state.copy())
             self.count+=1
@@ -147,19 +147,32 @@ Carbon_info = {
         'bondLength':1.42 #A
         }
 
-def make_sys(steps, new=True, HeatBath_on=False):
+def make_sys(steps, new=True, memory=True, HeatBath_on=False):
     if not new:
         with open('sys.obj', 'rb') as f:
             sys = pickle.load(f)
         sys.steps = steps
-        sys.t += sys.dt * sys.steps
+        if memory:
+            sys.t += sys.dt * sys.steps
+        else:
+            sys.t = sys.dt * sys.steps
+            sys.F_memory = np.zeros(3)
+            sys.V = np.array([])
+            sys.K = np.array([])
+            sys.E = np.array([])
+            sys.count = 0
+            sys.state_li = []
     else:    
-        sys = MD_sys(N=50, T=200, steps=steps, atom_info=Carbon_info, 
+        sys = MD_sys(N=100, T=200, steps=steps, atom_info=Carbon_info, 
                 HeatBath_on=HeatBath_on)
     return sys
 
 if __name__=='__main__':
-    sys = make_sys(steps=2000, new=False, HeatBath_on=True)
+    sys = make_sys(steps=2000,
+                    new=False,
+                    memory=False,
+                    HeatBath_on=False
+                    )
     with sys:
         sys.run()
 
