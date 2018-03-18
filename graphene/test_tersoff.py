@@ -18,12 +18,12 @@ class TestTersoff_V(unittest.TestCase):
                 [3.,3.,3.]
                 ])
 
-
         self.assertAlmostEqual(
                  tersoff_V(pos1), 0 )
         self.assertTrue(
                 np.allclose( tersoff_F(pos1), np.zeros_like(pos1) ))
 
+        #import ipdb; ipdb.set_trace()   
 
         pos2= np.array(
                 [
@@ -79,7 +79,6 @@ class TestTersoff_V(unittest.TestCase):
                 ])
         b_ = lambda Ctheta: b_eta(g_theta(Ctheta))
         cut5 = cut_test(2)
-        #import ipdb; ipdb.set_trace()   
 
         self.assertAlmostEqual(
                 tersoff_V(pos5), 

@@ -36,25 +36,17 @@ def b_func(rj, dj, cutj):
     etaj = np.sum(etajk, axis=1) - np.diag(etajk)
     return b_eta(etaj)
 
-def neighborV_gen(rij, dij, cut_ind):
-    natoms = len(dij)
-
-    for i in range(natoms):
-        js = cut_ind[1][ cut_ind[0] == i ]
-        if len(js) == 0:
-            yield 0
-
-        rj  = rij[i, js]
-        dj = dij[i, js]
-        cutj = np.where( dj>R-D, cut_off(dj), 1)
-        
+def neighborV_gen(rjN, djN, cut_groups):
+    cutj =  np.where( djN>R-D, cut_off(djN), 1)
+    fRj = fR(djN)
+    fAj = fA(djN)
+    for js in cut_groups:
         if len(js) == 1:
             bj = 1
         else:
-            bj = b_func(rj, dj, cutj)  
-        yield np.sum( cutj * (fR(dj) - bj * fA(dj)) )
+            bj = b_func(rjN[js], djN[js], cutj[js])  
+        yield np.sum( cutj[js] * (fRj[js] - bj * fAj[js]) ) 
         
-
 def tersoff_V(pos):
     natoms = len(pos) 
 
@@ -62,9 +54,14 @@ def tersoff_V(pos):
     dij =  np.linalg.norm( rij, axis=2 )
     dij += np.identity(natoms)*2*R
 
-    cut_ind = np.where(dij < R+D)
- 
-    return sum( neighborV_gen(rij, dij, cut_ind) ) / 2 
+    cut_mask = dij < R+D
+    if not cut_mask.any(): return 0.
+    cut_ind = np.where(cut_mask)
+    cut_groups = np.split(np.arange(len(cut_ind[0])),
+        np.where( np.diff(cut_ind[0]) )[0]+1)
+
+    return sum( neighborV_gen(rij[cut_ind], dij[cut_ind], cut_groups) ) / 2 
+
 
 def tersoff_F(pos):
     dEdR = elementwise_grad(tersoff_V)
