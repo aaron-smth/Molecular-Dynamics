@@ -34,7 +34,7 @@ class TestTersoff_V(unittest.TestCase):
         d2 = np.linalg.norm(r2)
 
         self.assertAlmostEqual(
-                tersoff_V(pos2), cut_test(d2) * ( f_R(d2) - f_A(d2))
+                tersoff_V(pos2), cut_test(d2) * ( fR(d2) - fA(d2))
                 ) 
 
         pos3= np.array(
@@ -49,7 +49,7 @@ class TestTersoff_V(unittest.TestCase):
         g3 = 1 + c**2 * (1/ d**2 - 1/ (d**2 + (h-0.5)**2))
         b3 = (1+ (beta * g3)**n)**(-1/(2*n))
         self.assertAlmostEqual(
-                tersoff_V(pos3), 3 * cut_test(d3) * ( f_R(d3) - b3 * f_A(d3))
+                tersoff_V(pos3), 3 * cut_test(d3) * ( fR(d3) - b3 * fA(d3))
                 ) 
                           
         pos4= np.array(
@@ -60,19 +60,34 @@ class TestTersoff_V(unittest.TestCase):
                 ])
         r4 = pos4[None, :] - pos4[:, None]
         d4 = np.linalg.norm(r4, axis=2)
-        print(r4,d4)
 
-        g4a = g_theta(0)
-        b4a = b_eta(g4a)
-        g4b = g_theta(1/sqrt(2))
-        b4b = b_eta(g4b)
-        
-        print('b4a, b4b', b4a, b4b)
+        b4a = b_eta(g_theta(0))
+        b4b = b_eta(g_theta(1/sqrt(2)))
+
         self.assertAlmostEqual(
                 tersoff_V(pos4), 
-                ( f_R(1) - b4a * f_A(1) 
-                + f_R(1/sqrt(2)) - b4b * f_A(1/sqrt(2))
-                + f_R(1) - b4b * f_A(1)
+                ( fR(1) - b4a * fA(1) 
+                + fR(sqrt(2)) - b4b * fA(sqrt(2))
+                + fR(1) - b4b * fA(1)
                 ) )
+
+        pos5= np.array(
+                [
+                [0.,0.,0.],
+                [2.,0.,0.], 
+                [0.,1.,0.]
+                ])
+        b_ = lambda Ctheta: b_eta(g_theta(Ctheta))
+        cut5 = cut_test(2)
+        #import ipdb; ipdb.set_trace()   
+
+        self.assertAlmostEqual(
+                tersoff_V(pos5), 
+                ( fR(1) - b_eta(g_theta(0) * cut5)*fA(1)
+                + (fR(2) - b_(0) * fA(2)) * cut5
+                + fR(1) - 1 * fA(1)
+                + (fR(2) - 1 * fA(2)) * cut5
+                ) / 2 )
+
 if __name__ == '__main__':
     unittest.main()

@@ -18,14 +18,15 @@ Carbon_radius: 1.7 A
 class MD_sys:
 
     k = 8.617e-5
-    def __init__(self, N, T, steps, atom_info, dt=0.002):
+    def __init__(self, N, T, steps, atom_info, dt=0.01, HeatBath_on=False):
         self.m = atom_info['m']
         self.N = N
         self.T = T
         self.dt = dt
+        self.HeatBath_on = HeatBath_on
         self.steps = steps # run steps
         self.t = self.dt * self.steps 
-        self.L = atom_info['bondLength'] * N**(1/2) * 3 # box size 
+        self.L = atom_info['bondLength'] * N**(1/3) * 1 # box size 
         # a buffer distance between wall and the particles at the edge  
         self.dl =  0.05 * self.L 
     
@@ -49,6 +50,8 @@ class MD_sys:
     
     def hexagon_pos(self):
         N, L, dl = self.N, self.L, self.dl
+        pass
+        
 
     def Maxwell_vel(self):
         N,k,T,m = self.N, self.k, self.T, self.m 
@@ -92,7 +95,7 @@ class MD_sys:
         return f
     
     def HeatBath(self):
-        tau = 100 * self.dt
+        tau = 500 * self.dt
         T_des = self.T
         T_now = self.K[-1] * 2 / (3 * self.k) / self.N
         ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
@@ -108,7 +111,8 @@ class MD_sys:
         self.hard_wall()
         f2 = self.force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
-        #self.HeatBath()
+        if self.HeatBath_on == True:
+            self.HeatBath()
 
     @logging_time
     def run(self):
@@ -143,18 +147,19 @@ Carbon_info = {
         'bondLength':1.42 #A
         }
 
-def make_sys(steps, new=True):
+def make_sys(steps, new=True, HeatBath_on=False):
     if not new:
         with open('sys.obj', 'rb') as f:
             sys = pickle.load(f)
         sys.steps = steps
         sys.t += sys.dt * sys.steps
     else:    
-        sys = MD_sys(N=5, T=10, steps=steps, atom_info=Carbon_info)
+        sys = MD_sys(N=50, T=200, steps=steps, atom_info=Carbon_info, 
+                HeatBath_on=HeatBath_on)
     return sys
 
 if __name__=='__main__':
-    sys = make_sys(steps=20000, new=True)
+    sys = make_sys(steps=2000, new=False, HeatBath_on=True)
     with sys:
         sys.run()
 
