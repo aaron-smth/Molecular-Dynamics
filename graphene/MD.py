@@ -3,7 +3,7 @@ import pickle
 from numpy import sqrt, log, sin, cos, pi, exp
 from tools import logging_dict, logging_time, progress_bar
 from tersoff import tersoff_F, tersoff_V
-from config import m,L
+from config import m,L,N,T,dt
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -14,13 +14,13 @@ Mass: u (atomic mass, 931.49 Mev/c^2)
 derived quantities:
 Light speed: c = 3e6 A/ps
 Boltzmann constant: k = 8.617e-5 ev/K
-Carbon_radius: 1.7 A
+Carbon_radius: about 1.7 A
 '''
 class MD_sys:
 
     k = 8.617e-5
-    def __init__(self, N, T, steps, atom_info, dt=0.01, HeatBath_on=False):
-        self.m = atom_info['m']
+    def __init__(self, steps, HeatBath_on=False):
+        self.m = m
         self.N = N
         self.T = T
         self.dt = dt
@@ -55,6 +55,7 @@ class MD_sys:
         return coords 
     
     def hexagon_pos(self):
+        'For graphene ICs'
         N, L, dl = self.N, self.L, self.dl
         pass
         
@@ -106,12 +107,14 @@ class MD_sys:
         T_now = self.K[-1] * 2 / (3 * self.k) / self.N
         ratio = np.sqrt( 1 + self.dt / tau * (T_des / T_now -1) )
         self.state[:, 3:] *= ratio
+        if T_now / T_des < 1.1 and self.count * self.dt > 2.:
+            print('turning off Heat Bath')
+            self.HeatBath_on = False
           
     def Verlet(self):
         '''r_n+1 = r_n + v_n * dt + f_n/2m * (dt)^2
            v_n+1 = v_n + (f_n + f_n+1)/2m *dt ''' 
         dt , m = self.dt , self.m 
-
         f1 = self.force(new=False)
         self.state[:, :3] += self.state[:, 3:] * dt + f1/(2*m) * dt**2
         self.hard_wall()
@@ -148,16 +151,13 @@ class MD_sys:
         with open('sys.obj', 'wb') as f:
             pickle.dump(self, f) 
 
-Carbon_info = {
-        'm':12.0107, #u
-        'bondLength':1.42 #A
-        }
 
 def make_sys(steps, new=True, memory=True, HeatBath_on=False):
     if not new:
         with open('sys.obj', 'rb') as f:
             sys = pickle.load(f)
         sys.steps = steps
+        sys.HeatBath_on = HeatBath_on
         if memory:
             sys.t += sys.dt * sys.steps
         else:
@@ -169,15 +169,14 @@ def make_sys(steps, new=True, memory=True, HeatBath_on=False):
             sys.count = 0
             sys.state_li = []
     else:    
-        sys = MD_sys(N=1000, T=200, steps=steps, atom_info=Carbon_info, 
-                HeatBath_on=HeatBath_on)
+        sys = MD_sys(steps=steps, HeatBath_on=HeatBath_on)
     return sys
 
 if __name__=='__main__':
     sys = make_sys(steps=2000,
-                    new=True,
                     memory=False,
-                    HeatBath_on=True
+                    HeatBath_on=False,
+                    new=False
                     )
     with sys:
         sys.run()

@@ -15,8 +15,11 @@ R = 1.95 #A
 D = 0.15
 
 # carbon parameters
-m = 12.0107, #u
+m = 12.0107 #u
 bondLength = 1.42 #A
 
 # system parameters
-L = bondLength * 1000**(1/3) #A, boxsize
+N = 100
+T = 300
+L = bondLength * N**(1/3) * 0.5 #A, boxsize
+dt = 0.01

@@ -28,9 +28,9 @@ class MD_sys(MD_sys):
         print(f'save data to {fname}')
         with open(fname, 'wb') as f:
             for i,state in enumerate(self.state_li):
-                to_xyz(f, f'frame {i}', state, name='Ar')  
+                to_xyz(f, f'frame {i}', state, name='C')  
 
-    def RDF(self, N_bins=30, ind=-1):
+    def RDF(self, N_bins=200, ind=-1):
         R = self.L
         pos = self.state_li[ind][:, :3]
         bins = np.linspace(0, R, N_bins)
@@ -64,7 +64,7 @@ class MD_sys(MD_sys):
         return np.array(self.Rs), np.array(self.Cs)
 
     def profile_plot(self, fname): 
-        t,dt = self.t, self.dt 
+        t,dt,N = self.t, self.dt, self.N
         Ts = self.Ts
         
         print('plotting energy data...')    
@@ -72,9 +72,8 @@ class MD_sys(MD_sys):
         ax1,ax2,ax3,ax4,ax5,ax6 = axes.reshape(-1)
 
         for label,energy in zip(['E','V','K'],[self.E,self.V,self.K]):
-            ax1.plot(np.linspace(0,t,len(energy)), energy, label=label)
-            ax1.axhline(energy[-20:].mean(), ls='--')
-        ax1.set(title='Energy evolution')
+            ax1.plot(np.linspace(0,t,len(energy)), energy / N , label=label)
+        ax1.set(title='Energy evolution', xlabel='t/ps', ylabel='Energy ev/atom')
         ax1.legend()
 
         ax2.plot(np.linspace(0,t,len(self.Ts)), self.Ts, label='Temperature')
@@ -108,8 +107,7 @@ class MD_sys(MD_sys):
         
 if __name__=='__main__':
     with open('sys.obj', 'rb') as f:
-        sys = pickle.load(f)
-    
+        sys = pickle.load(f) 
     with sys:
         sys.save_data('frames.xyz')
         sys.profile_plot('statistics.pdf')
