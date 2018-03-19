@@ -68,7 +68,7 @@ class MD_sys(MD_sys):
         Ts = self.Ts
         
         print('plotting energy data...')    
-        fig, axes = plt.subplots(2,3, figsize=(18,10) )
+        fig, axes = plt.subplots(2,3, figsize=(20,10) )
         ax1,ax2,ax3,ax4,ax5,ax6 = axes.reshape(-1)
 
         for label,energy in zip(['E','V','K'],[self.E,self.V,self.K]):
@@ -88,7 +88,8 @@ class MD_sys(MD_sys):
         indexes = ((len(self.state_li)-1) * np.array([0,0.1,1])).astype(int)
         for ind in indexes: 
             gs, rs = self.RDF(ind=ind)
-            ax3.plot(rs, gs, label=f'time:{round(ind/len(self.state_li), 2)}')
+            ax3.plot(rs[rs<4], gs[rs<4],
+                    label=f'time:{round(ind/len(self.state_li), 2)}')
         ax3.set(title='RDF', xlabel='r', ylabel='g(r)')
         ax3.legend(loc='best')
 

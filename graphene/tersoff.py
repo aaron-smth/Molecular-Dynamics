@@ -1,20 +1,7 @@
 import autograd.numpy as np
 from autograd import elementwise_grad
 from autograd.numpy import sqrt, log, sin, cos, pi, exp
-
-# parameters
-A = 1393.6 #ev
-B = 430. #old:346.74 
-lam1 = 3.4879 #A^-1
-lam2 = 2.2119
-lam3 = 0 
-n = 0.72751 #1
-c = 38049.0
-d = 4.3484
-h = -0.930 #old:-0.57058
-beta= 1.5724e-7
-R = 1.95 #A
-D = 0.15
+from config import *
 
 cut_off = lambda r: 1/2 - 1/2 * sin(pi/2 * (r-R)/D)
 fR = lambda r: A * exp(-lam1 * r) 
@@ -22,6 +9,10 @@ fA = lambda r: B * exp(-lam2 * r)
 g_theta = lambda Ctheta: 1+ c**2 * ( 1/d**2 - 1/(d**2 + (h - Ctheta)**2) ) 
 b_eta = lambda eta: (1 + (beta * eta)**n) ** (-1/(2*n))  
 
+def Periodic_map(x):
+    x += (x < -L/2) * L
+    x += (x > L/2)  * -L 
+    return x
 
 def g_func(rij, dij):
     dotijk = np.einsum('ijd,ikd->ijk', rij, rij) #j,k
@@ -59,19 +50,13 @@ def neighborV_gen(rjN, djN, cut_groups):
             yield np.sum( -cutj[ind1] * fAj[ind1] ) 
         else:
             bij = b_func(rjN[inds], djN[inds], cutj[inds])  
-            yield np.sum( cutj[inds] * bij * -fAj[inds])
-        
-    #for js in cut_groups:
-    #    if len(js) == 1:
-    #        bj = 1
-    #    else:
-    #        bj = b_func(rjN[js], djN[js], cutj[js])  
-    #    yield np.sum( -cutj[js] *  bj * fAj[js]) 
+            yield np.sum( cutj[inds] * bij * -fAj[inds]) 
         
 def tersoff_V(pos):
     natoms = len(pos) 
 
     rij = pos[None, :] - pos[:, None] + np.identity(natoms)[:,:,None]
+    rij = Periodic_map(rij)
     dij =  np.linalg.norm( rij, axis=2 )
     dij+=  np.identity(natoms) * (2 * R)
 

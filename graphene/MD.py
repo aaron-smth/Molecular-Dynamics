@@ -3,6 +3,7 @@ import pickle
 from numpy import sqrt, log, sin, cos, pi, exp
 from tools import logging_dict, logging_time, progress_bar
 from tersoff import tersoff_F, tersoff_V
+from config import m,L
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -26,7 +27,7 @@ class MD_sys:
         self.HeatBath_on = HeatBath_on
         self.steps = steps # run steps
         self.t = self.dt * self.steps 
-        self.L = atom_info['bondLength'] * N**(1/3) * 1 # box size 
+        self.L = L # box size 
         # a buffer distance between wall and the particles at the edge  
         self.dl =  0.05 * self.L 
     
@@ -47,6 +48,11 @@ class MD_sys:
         coords = np.vstack(np.meshgrid(side_coords, side_coords, side_coords)).reshape(3,-1).T
         coords = coords[:N] # truncate to N particles
         return coords
+
+    def random_pos(self):
+        N,L = self.N, self.L
+        coords = np.random.uniform( 0, L, size=(N, 3))
+        return coords 
     
     def hexagon_pos(self):
         N, L, dl = self.N, self.L, self.dl
@@ -64,7 +70,7 @@ class MD_sys:
         return vs
 
     def init_state(self, fromF=False):
-        xs = self.lattice_pos()
+        xs = self.random_pos() #lattice_pos()
         vs = self.Maxwell_vel()
         '''returning a (N, 6) shaped array representing a state'''
         self.state = np.append( xs, vs, axis=1) 
@@ -163,15 +169,15 @@ def make_sys(steps, new=True, memory=True, HeatBath_on=False):
             sys.count = 0
             sys.state_li = []
     else:    
-        sys = MD_sys(N=100, T=200, steps=steps, atom_info=Carbon_info, 
+        sys = MD_sys(N=1000, T=200, steps=steps, atom_info=Carbon_info, 
                 HeatBath_on=HeatBath_on)
     return sys
 
 if __name__=='__main__':
     sys = make_sys(steps=2000,
-                    new=False,
+                    new=True,
                     memory=False,
-                    HeatBath_on=False
+                    HeatBath_on=True
                     )
     with sys:
         sys.run()
