@@ -1,0 +1,18 @@
+Can lambda reflect the chaotic behavior seen in bifurcation diagram?
+
+Comparing the Bifurcation plot and the Lyapunov plot, we could see that all
+positive lambda values are in the chaotic regions on the right. The few dips
+on the right represents the non-chaotic windows area.
+
+How does lambda depend on a particular value of x?
+
+As coould be seen from ly_exp2.png, where the four cases where 
+x0=0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+were plotted against each other. As the graph shows, specific x0 does not change 
+the overall shape of the lambda to alpha graph, but varies in some details.
+
+Find a case where the Lyapunov exponent is zero
+
+As coud be seen from graph ly_exp.png and bif.png, all the bifurcation 
+points (where one branch divide into two) correspond to a peak where the Lyapunov 
+exponent is nearly 0. 
