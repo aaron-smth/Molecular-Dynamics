@@ -9,7 +9,7 @@ fA = lambda r: B * exp(-lam2 * r)
 g_theta = lambda Ctheta: 1+ c**2 * ( 1/d**2 - 1/(d**2 + (h - Ctheta)**2) ) 
 b_eta = lambda eta: (1 + (beta * eta)**n) ** (-1/(2*n))  
 
-def Periodic_map(x):
+def Periodic_map(x):    
     x += (x < -L/2) * L
     x += (x > L/2)  * -L 
     return x
@@ -55,18 +55,17 @@ def neighborV_gen(rjN, djN, cut_groups):
 def tersoff_V(pos):
     natoms = len(pos) 
 
-    rij = pos[None, :] - pos[:, None] + np.identity(natoms)[:,:,None]
-    #rij = Periodic_map(rij)
+    rij = pos[None, :] - pos[:, None] + np.eye(natoms)[:,:,None]
+    rij = Periodic_map(rij)
     dij =  np.linalg.norm( rij, axis=2 )
-    dij+=  np.identity(natoms) * (2 * R)
+    dij+=  np.eye(natoms) * (2 * R) #to avoid the diagonal terms dii being selected
 
     cut_mask = dij < R+D
-    if not cut_mask.any(): print(0)
     if not cut_mask.any(): return 0.
     cut_ind = np.where(cut_mask)
     cut_groups = np.split(np.arange(len(cut_ind[0])),
         np.where( np.diff(cut_ind[0]) )[0]+1)
-    return sum( neighborV_gen(rij[cut_ind], dij[cut_ind], cut_groups) ) / 2 
+    return np.sum( neighborV_gen(rij[cut_ind], dij[cut_ind], cut_groups) ) / 2 
 
 
 def tersoff_F(pos):

@@ -50,12 +50,12 @@ def Ly_exponent(x0, steps):
 
 def Ly_plot():
     fig, ax = plt.subplots(figsize=(30,16))
-    for x0 in [0.6]:
+    for x0 in np.arange(1,10) * 0.1:
         lams = Ly_exponent(x0, 5000) 
         ax.plot(rs, lams, label=f'x0={round(x0,1)}')
     ax.set(xlabel='$\\alpha$', ylabel='$\lambda$')
     ax.legend()
-    fig.savefig('ly_exp.png')
+    fig.savefig('ly_exp2.png')
 
 
 #Bifurcate_plot()

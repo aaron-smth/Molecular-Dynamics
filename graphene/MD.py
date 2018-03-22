@@ -3,7 +3,7 @@ import pickle
 from numpy import sqrt, log, sin, cos, pi, exp
 from tools import logging_dict, logging_time, progress_bar
 from tersoff import tersoff_F, tersoff_V
-from config import m,L,N,T,dt
+from config import m,L,N,T,dt,HeatBath_on,steps,fromFile,memory_on
 
 '''Units
 length: A (Angstrom, 1e-10 m)
@@ -38,7 +38,8 @@ class MD_sys:
         self.count = 0
 
         self.init_state()
-
+    
+    @property
     def lattice_pos(self):
         '''creating initial positions at lattice points, specified by the sys_dict'''
         N,L,dl = self.N, self.L, self.dl
@@ -49,17 +50,19 @@ class MD_sys:
         coords = coords[:N] # truncate to N particles
         return coords
 
+    @property
     def random_pos(self):
         N,L = self.N, self.L
         coords = np.random.uniform( 0, L, size=(N, 3))
         return coords 
     
+    @property
     def hexagon_pos(self):
         'For graphene ICs'
         N, L, dl = self.N, self.L, self.dl
         pass
         
-
+    @property
     def Maxwell_vel(self):
         N,k,T,m = self.N, self.k, self.T, self.m 
         sigma = sqrt(k*T/m)
@@ -71,8 +74,8 @@ class MD_sys:
         return vs
 
     def init_state(self, fromF=False):
-        xs = self.random_pos() #lattice_pos()
-        vs = self.Maxwell_vel()
+        xs = self.random_pos #lattice_pos()
+        vs = self.Maxwell_vel
         '''returning a (N, 6) shaped array representing a state'''
         self.state = np.append( xs, vs, axis=1) 
         '''removing the COM velocity''' 
@@ -87,18 +90,11 @@ class MD_sys:
         v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
     def force(self, new=True):
-        '''force calculation'''
         if not new:
             return self.F_memory 
-
         pos = self.state[:, :3] 
         f = tersoff_F(pos)
         self.F_memory = f
-
-        if self.count%100==0:
-            '''recording potential energy every 100 steps'''
-            V = tersoff_V(pos) 
-            self.V = np.append(self.V , V)
         return f
     
     def HeatBath(self):
@@ -117,7 +113,6 @@ class MD_sys:
         dt , m = self.dt , self.m 
         f1 = self.force(new=False)
         self.state[:, :3] += self.state[:, 3:] * dt + f1/(2*m) * dt**2
-        self.hard_wall()
         f2 = self.force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
         if self.HeatBath_on == True:
@@ -128,11 +123,13 @@ class MD_sys:
         '''main program'''
         for i in range(self.steps):
             progress_bar(i, self.steps) 
-            self.K = np.append(self.K ,0.5*self.m*np.sum(self.state[:, 3:]**2))
-            self.Verlet()
             if self.count%20==0: # change to 100 in the end
+                pos,vel = self.state[:, :3], self.state[:, 3:]
+                self.K = np.append(self.K ,0.5 * self.m * np.sum(vel**2))
+                self.V = np.append(self.V , tersoff_V(pos))
                 self.E = np.append(self.E , self.K[-1] + self.V[-1] )
                 self.state_li.append(self.state.copy())
+            self.Verlet()
             self.count+=1
 
     def __enter__(self):
@@ -151,33 +148,32 @@ class MD_sys:
         with open('sys.obj', 'wb') as f:
             pickle.dump(self, f) 
 
-
-def make_sys(steps, new=True, memory=True, HeatBath_on=False):
-    if not new:
-        with open('sys.obj', 'rb') as f:
-            sys = pickle.load(f)
-        sys.steps = steps
-        sys.HeatBath_on = HeatBath_on
-        if memory:
-            sys.t += sys.dt * sys.steps
-        else:
-            sys.t = sys.dt * sys.steps
-            sys.F_memory = np.zeros(3)
-            sys.V = np.array([])
-            sys.K = np.array([])
-            sys.E = np.array([])
-            sys.count = 0
-            sys.state_li = []
+def load_obj():
+    with open(fromFile, 'rb') as f:
+        sys = pickle.load(f)
+    sys.steps = steps
+    sys.HeatBath_on = HeatBath_on
+    if memory_on:
+        sys.t += sys.dt * sys.steps
+    else:
+        sys.t = sys.dt * sys.steps
+        sys.F_memory = np.zeros(3)
+        sys.V = np.array([])
+        sys.K = np.array([])
+        sys.E = np.array([])
+        sys.count = 0
+        sys.state_li = []
+    return sys
+    
+def make_sys():
+    if fromFile:
+        sys = load_obj()
     else:    
         sys = MD_sys(steps=steps, HeatBath_on=HeatBath_on)
     return sys
 
 if __name__=='__main__':
-    sys = make_sys(steps=2000,
-                    memory=False,
-                    HeatBath_on=False,
-                    new=False
-                    )
+    sys = make_sys()                
     with sys:
         sys.run()
 

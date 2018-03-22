@@ -21,5 +21,9 @@ bondLength = 1.42 #A
 # system parameters
 N = 100
 T = 300
-L = bondLength * N**(1/3) * 0.5 #A, boxsize
+L = bondLength * N**(1/3) * 1. #A, boxsize
 dt = 0.01
+HeatBath_on = True
+memory_on = False
+steps = 2000
+fromFile = None #'sys.obj' 
