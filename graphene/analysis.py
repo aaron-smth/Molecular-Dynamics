@@ -2,9 +2,9 @@ import numpy as np
 from numpy import pi
 import matplotlib.pyplot as plt 
 import pickle
-from tools import to_xyz
-from tools import logging_dict
+from tools import to_xyz, logging_dict
 from MD import MD_sys
+from tersoff import tersoff_V
 
 def moving_ave(arr, cut, n):
     ave = []
@@ -16,10 +16,19 @@ class MD_sys(MD_sys):
       
     def __enter__(self):
         return self
+    
+    @property
+    def V(self):
+        li = [tersoff_V(state[:, :3]) for state in self.state_li]
+        return np.array(li)
 
     @property
     def Ts(self):
         return self.K / self.N / (1.5* self.k) 
+
+    @property
+    def E(self):
+        return self.V + self.K
     
     def save_data(self, fname):
         '''saving parameters to results.log'''
@@ -30,7 +39,8 @@ class MD_sys(MD_sys):
             for i,state in enumerate(self.state_li):
                 to_xyz(f, f'frame {i}', state, name='C')  
 
-    def RDF(self, N_bins=200, ind=-1):
+    def RDF(self, ind):
+        N_bins = 200
         R = self.L
         pos = self.state_li[ind][:, :3]
         bins = np.linspace(0, R, N_bins)
@@ -65,7 +75,6 @@ class MD_sys(MD_sys):
 
     def profile_plot(self, fname): 
         t,dt,N = self.t, self.dt, self.N
-        Ts = self.Ts
         
         print('plotting energy data...')    
         fig, axes = plt.subplots(2,3, figsize=(20,10) )
@@ -77,7 +86,7 @@ class MD_sys(MD_sys):
         ax1.legend()
 
         ax2.plot(np.linspace(0,t,len(self.Ts)), self.Ts, label='Temperature')
-        T_ave,cut,n = moving_ave(Ts,cut=1000,n=200)
+        T_ave,cut,n = moving_ave(self.Ts,cut=1000,n=200)
         ax2.plot(np.linspace(cut*dt, t-n*dt, len(T_ave)), 
                 T_ave, color='red', label='Time average T')
         ax2.axhline(self.T, ls='--', color='orange', label='initial temperature')

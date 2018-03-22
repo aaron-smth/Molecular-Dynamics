@@ -34,7 +34,6 @@ class MD_sys:
         self.F_memory = np.zeros(3)
         self.V = np.array([])
         self.K = np.array([])
-        self.E = np.array([])
         self.count = 0
 
         self.init_state()
@@ -89,6 +88,12 @@ class MD_sys:
         cond1, cond2 = p>self.L , p<0
         v[cond1], v[cond2] = -abs(v[cond1]), abs(v[cond2]) 
 
+    def periodic_wall(self):  
+        p = self.state[:,:3]
+        cond1, cond2 = p>self.L , p<0
+        p[cond1] -= L
+        p[cond2] += L
+
     def force(self, new=True):
         if not new:
             return self.F_memory 
@@ -113,6 +118,7 @@ class MD_sys:
         dt , m = self.dt , self.m 
         f1 = self.force(new=False)
         self.state[:, :3] += self.state[:, 3:] * dt + f1/(2*m) * dt**2
+        self.periodic_wall()
         f2 = self.force()
         self.state[:, 3:] += (f1+f2) / (2*m) * dt
         if self.HeatBath_on == True:
@@ -127,7 +133,6 @@ class MD_sys:
                 pos,vel = self.state[:, :3], self.state[:, 3:]
                 self.K = np.append(self.K ,0.5 * self.m * np.sum(vel**2))
                 self.V = np.append(self.V , tersoff_V(pos))
-                self.E = np.append(self.E , self.K[-1] + self.V[-1] )
                 self.state_li.append(self.state.copy())
             self.Verlet()
             self.count+=1
@@ -148,7 +153,7 @@ class MD_sys:
         with open('sys.obj', 'wb') as f:
             pickle.dump(self, f) 
 
-def load_obj():
+def load_obj(fromFile):
     with open(fromFile, 'rb') as f:
         sys = pickle.load(f)
     sys.steps = steps
@@ -167,7 +172,7 @@ def load_obj():
     
 def make_sys():
     if fromFile:
-        sys = load_obj()
+        sys = load_obj(fromFile)
     else:    
         sys = MD_sys(steps=steps, HeatBath_on=HeatBath_on)
     return sys
