@@ -58,19 +58,20 @@ def neighborV_gen(rjN, djN, cut_groups):
         else:
             bij = b_func(rjN[inds], djN[inds], cutj[inds])  
             yield np.sum( cutj[inds] * bij * -fAj[inds]) 
-        
+
 def get_relative(pos):
     natoms = len(pos) 
-
     rij = pos[np.newaxis, :, :] - pos[:, np.newaxis, :] + np.eye(natoms)[:,:,None]
-    rij = Periodic_map(rij)
+    #rij = Periodic_map(rij)
     dij = np.linalg.norm( rij, axis=2 )
     dij+= np.eye(natoms) * (2 * R) #to avoid the diagonal terms dii being selected
     return rij, dij
-
-def tersoff_V(pos):
-    rij, dij = get_relative(pos)
-
+        
+def tersoff_pairwise_V(rij):
+    natoms = len(rij)
+    dij = np.linalg.norm( rij, axis=2 )
+    dij+= np.eye(natoms) * (2 * R) #to avoid the diagonal terms dii being selected
+      
     cut_mask = dij < R+D
     if not cut_mask.any(): return 0.
     cut_ind = np.where(cut_mask)
@@ -79,8 +80,22 @@ def tersoff_V(pos):
     cut_groups.sort(key=len) #for later
     return np.sum( neighborV_gen(rij[cut_ind], dij[cut_ind], cut_groups) ) / 2 
 
+def tersoff_V(pos):
+    natoms = len(pos) 
 
+    rij = pos[np.newaxis, :, :] - pos[:, np.newaxis, :] + np.eye(natoms)[:,:,None]
+    #rij = Periodic_map(rij)
+    return tersoff_pairwise_V(rij) 
+    
 def tersoff_F(pos):
     dEdR = elementwise_grad(tersoff_V)
     return -dEdR(pos)
+ 
+def tersoff_pairwise_F(rij):
+    dEdR = elementwise_grad(tersoff_pairwise_V)
+    return -dEdR(rij)
+
+def Virial_pot(Fijd, rijd):
+    Fijd = tersoff_pairwise_F(rijd) 
+    return 0
 

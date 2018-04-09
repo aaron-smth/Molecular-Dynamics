@@ -23,7 +23,7 @@ Carbon_radius: about 1.7 A
 
 def lattice_pos(N, L):
     dl = 0.05 * L
-    '''creating initial positions at lattice points, specified by the sys_dict'''
+    '''creating initial positions at lattice points'''
     n_side = np.ceil(N ** (1/3) )   # how many particles on a side
     side_coords = np.linspace(0+dl, L-dl, n_side)
     '''meshgrid side_coordinates to get the coordinates'''
@@ -36,9 +36,27 @@ def random_pos(N, L):
     coords = np.random.uniform( 0, L, size=(N, 3))
     return coords 
 
-def hexagon_pos(N, L):
-    'For graphene ICs'
-    pass
+def graphene_pos(R, l, n_defects=3):
+    '''l stands for bond length'''
+    N = int(np.pi * R**2 * 2) * 3/2
+    Nside = np.ceil((N)**(1/2)) # a longer side
+    Nside += Nside % 3 # To bring it to 3n 
+
+    coords = np.mgrid[0:Nside, 0:Nside].reshape(2,-1).T
+    coords = coords[ ((coords[:,1] + coords[:,0]) % 3) != 0]
+
+    transform_matrix = np.array([[sqrt(3),1], [-sqrt(3), 1]])
+    hex_coords = np.einsum('ij, Ni -> Nj', transform_matrix, coords)
+
+    full_coords = np.append(hex_coords, np.zeros((len(coords),1), dtype=int), axis=1)
+    full_coords = full_coords / 2 * l # scalling to the right bond length
+
+    dists = np.linalg.norm(full_coords - full_coords.mean(axis=0), axis=1)
+    full_coords = full_coords[dists < R]
+    full_coords -= full_coords.min(axis=0) # shifting to the positive domain 
+    full_coords[:, 2] += R # shifting the z coords to the middle
+    defect_coords = np.delete(full_coords, defect_ind(full_coords, n_defects), axis=0)
+    return defect_coords
 
 Box_Muller = lambda r1, r2: sqrt(-2*log(r1)) * cos(2*pi*r2)
 
@@ -48,6 +66,23 @@ def Maxwell_vel(N, T, m, k):
     vs = sigma * Box_Muller(rands[:,:,0], rands[:,:,1])
     return vs
 
+def stretch(t, F0, t_total, s_rate=0.1):
+    t_shifted = t - t_total / 2
+    return F0 / (1 + exp(s_rate * t_shifted))
+
+def outer_ind(pos, r):
+    dist = np.linalg.norm(pos - pos.mean(axis=0), axis=1)
+    return np.where(dist > r)
+
+def inner_ind(pos, r):
+    dist = np.linalg.norm(pos - pos.mean(axis=0), axis=1)
+    return np.where(dist < r)
+
+def defect_ind(pos, n): 
+    dists = np.linalg.norm(pos - pos.mean(axis=0), axis=1)
+    center_inds = np.argsort(dists)[:n]
+    return center_inds
+
 class MD_sys:
 
     k = 8.617e-5
@@ -55,10 +90,11 @@ class MD_sys:
         for k, v in custom_info.items():
             setattr(self, k, v)
 
-        self.t = self.dt * self.steps 
+        self.t_total = self.dt * self.steps 
+        self.t = 0.
         # a buffer distance between wall and the particles at the edge  
     
-        self.F_memory = np.zeros((self.N,3))
+        self.F_memory = np.zeros(3)
         self.K = []
         self.r_li = []
         self.v_li = []
@@ -66,7 +102,9 @@ class MD_sys:
         self.init_state()
  
     def init_state(self):
-        self.r = random_pos(self.N, self.L)
+        self.r = graphene_pos(self.R, self.l, n_defects=self.n_defects)
+        self.outer_ind = outer_ind(self.r, self.R * 0.95)
+        self.N = len(self.r)
         self.v = Maxwell_vel(self.N, self.T, self.m, self.k)
         '''removing the COM velocity''' 
         self.v -= self.v.mean(axis=0)
@@ -80,7 +118,10 @@ class MD_sys:
         L = self.L
         cond1, cond2 = self.r>L , self.r<0
         self.r[cond1] -= L
-        self.r[cond2] += L
+        self.r[cond2] += L 
+
+    def fixing_outer(self):
+        self.v[self.outer_ind] = 0
 
     @property
     def force(self):
@@ -100,8 +141,9 @@ class MD_sys:
            v_n+1 = v_n + (f_n + f_n+1)/2m *dt ''' 
         dt , m = self.dt , self.m 
         f1 = self.F_memory
+        self.fixing_outer()
         self.r += self.v * dt + f1/(2*m) * dt**2
-        self.periodic_wall()
+        self.hard_wall()
         f2 = self.force
         self.v += (f1+f2) / (2*m) * dt
         if self.HeatBath_on:
@@ -117,22 +159,31 @@ class MD_sys:
                 self.r_li.append(self.r.copy())
                 self.v_li.append(self.v.copy())
             self.Verlet()
+            self.t += self.dt
 
     def __enter__(self):
         '''before each run do this'''
         if self.memory_on:
-            self.t += self.dt * self.steps 
+            self.t_total += self.dt * self.steps 
             if not isinstance(self.K, list):
                 self.K = self.K.tolist()
         else: 
-            self.t = self.dt * self.steps
+            self.t_total = self.dt * self.steps
+            self.t = 0.
             self.K = []
             self.r_li = []
             self.v_li = []
         logging_dict(self.short_info())
 
     def short_info(self):
-        return {k:v for k,v in vars(self).items() if type(v) in (int,float,bool)}
+        def is_info(k, v):
+            if type(v) in (int,float,bool,str):
+                return True
+            elif k in ['Virial']:
+                return True
+            else:
+                return False
+        return {k:v for k,v in vars(self).items() if is_info(k,v)}
 
     def __exit__(self, exc_type, exc_val, exc_tb): 
         '''dump all info into sys.obj'''

@@ -85,3 +85,14 @@ def test_F():
             ])
     assert np.allclose( tersoff_F(pos1), np.zeros_like(pos1) )
 
+
+def test_graphene_pos():
+    import matplotlib.pyplot as plt
+    from MD import graphene_pos
+    pos = graphene_pos(30, 1.42)
+    x, y = pos[:, 0], pos[:, 1]
+    fig, ax = plt.subplots()
+    ax.scatter(x, y)
+    plt.show(fig)
+  
+test_graphene_pos()

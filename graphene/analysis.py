@@ -8,6 +8,7 @@ from tools import to_xyz, logging_dict
 from MD import MD_sys
 from tersoff import tersoff_V
 from itertools import groupby
+import pandas as pd
 
 def percent_ind(li, percents):
     inds = (int( (len(li)-1) * i) for i in percents)
@@ -92,8 +93,36 @@ def Virial_K(pos):
     V = np.einsum('id, id' ,pos, force)
     return V
 
-def Pressure(pos):
-    pass
+def tau_pot(rijd):
+    from tersoff import tersoff_pairwise_F
+    Fijd = tersoff_pairwise_F(rijd) 
+    return np.einsum('ija, ijb -> ab', rijd, Fijd) / 2
+
+def tau_kin(vid, m):
+    v_mean = np.mean(vid, axis=0)
+    centered_v = vid - v_mean
+    return np.einsum('ia, ib -> ab', centered_v, centered_v) * (- m)
+    
+def Virial_Stress(pos, vel, m, L):
+    natoms = len(pos) 
+    rijd = pos[np.newaxis, :, :] - pos[:, np.newaxis, :] + np.eye(natoms)[:,:,None]
+    Volume = L**2 * 3.45 # the thickness of a graphene sheet is 3.45 A
+    return (tau_pot(rijd) + tau_kin(vel, m))/ Volume
+
+def particle_track(n_probes, r_li, fixed_ind):
+    free_inds = np.delete(np.arange(len(r_li[0])), fixed_ind)
+    inds = np.random.choice(free_inds, size=n_probes)
+    chosen_pos = np.array([r[inds, 2] for r in r_li])
+    probe_arr = np.einsum('tn->nt', chosen_pos) 
+    # (time, nth particle, direction) -> (nth particle, direction, time)
+    return probe_arr, inds
+
+def Freq_Ana(xs, tmax):
+    from scipy.signal import periodogram
+    dt = tmax / len(xs)
+    fs = 1 / dt
+    freq, Pxx_den = periodogram(xs, fs)
+    return freq, Pxx_den
 
 class MD_sys(MD_sys):
       
@@ -102,12 +131,24 @@ class MD_sys(MD_sys):
         return self.L**3
 
     def __enter__(self):
-        self.K = np.array(self.K)
-        self.V = np.fromiter((tersoff_V(r) for r in self.r_li), 
-                dtype=float)
-        self.E = self.V + self.K
-        self.Ts = temperature(self.K, self.N, self.k)
+        df = pd.DataFrame()
+        df['t'] = np.linspace(0, self.t_total, len(self.r_li))
+        df['K'] = np.array(self.K)
+        print('Calculating potential')
+        df['V'] = np.fromiter((tersoff_V(r) for r in self.r_li), dtype=float)
+        df['E'] = df.V + df.K
+        df['T'] = temperature(df.K, self.N, self.k) 
+        df['R_corr'], df['V_corr'] = Correlation(self.r_li, self.v_li)
 
+        probes, probe_inds = particle_track(3, self.r_li, self.outer_ind)
+        for probe, ind in zip(probes, probe_inds):
+            df[f'p_{ind}'] = probe
+
+        self.Virial = Virial_Stress(self.r, self.v, self.m, self.L)
+        print('Calculating correlation')
+ 
+        df = df.set_index('t')
+        self.df = df
         return self    
  
     def save_data(self, fname):
@@ -120,62 +161,67 @@ class MD_sys(MD_sys):
                 to_xyz(f, f'frame {i}', r, name='C')  
 
     def profile_plot(self, fname): 
-        t,dt,N = self.t, self.dt, self.N
+        t,dt,N = self.t_total, self.dt, self.N
+        df = self.df
         
         print('plotting energy data...')    
-        fig, axes = plt.subplots(2,3, figsize=(20,10) )
-        ax1,ax2,ax3,ax4,ax5,ax6 = axes.reshape(-1)
+        fig, axes = plt.subplots(3,3, figsize=(20,15) )
+        ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9 = axes.reshape(-1)
 
-        for label,energy in zip(['E','V','K'],[self.E,self.V,self.K]):
-            ax1.plot(np.linspace(0,t,len(energy)), energy / N , label=label)
+        df['E'].plot(ax=ax1, label='Total energy')
+        df['V'].plot(ax=ax1, label='Potential energy')
+        df['K'].plot(ax=ax1, label='Kinetic energy')
         ax1.set(title='Energy evolution', xlabel='t/ps', ylabel='Energy ev/atom')
-        ax1.legend()
 
-        ax2.plot(np.linspace(0,t,len(self.Ts)), self.Ts, label='Temperature')
-        T_ave,cut,n = moving_ave(self.Ts,cut=1000,n=200)
-        ax2.plot(np.linspace(cut*dt, t-n*dt, len(T_ave)), 
-                T_ave, color='red', label='Time average T')
-        ax2.axhline(self.T, ls='--', color='orange', label='initial temperature')
-        ax2.set(title='Temperature evolution')
-        ax2.legend()
+        self.df['T'].plot(ax=ax2, title='Temperature')
+        ax2.axhline(self.T, ls='--', color='orange', label='Temperature Set')
         
         percents = [0, 0.2, 0.5, 1]
         for i,pos in enumerate(percent_ind(self.r_li, percents)):
             rs, gs = RDF(pos)
-            ax3.plot(rs, gs, label=f'time:{round(self.t * percents[i],2)}')
+            ax3.plot(rs, gs, label=f'time:{round(self.t_total * percents[i],2)}')
         plot_peaks(rs, gs, ax3)
         ax3.set(title='RDF', xlabel='r', ylabel='g(r)')
-        ax3.legend(loc='best')
 
         for i,r in enumerate(percent_ind(self.r_li, percents)):
             thetas = ADF(r)
             xs, ys = hist(thetas)
-            ax4.plot(xs, ys,label=f'time:{round(self.t * percents[i],2)}')
+            ax4.plot(xs, ys,label=f'time:{round(self.t_total * percents[i],2)}')
             plot_peaks(xs, ys, ax4)
-            ax4.set(xlabel='angles', ylabel='frequency')
-        ax4.legend()
+            ax4.set(title='ADF', xlabel='angles', ylabel='frequency')
 
         neighbors = Neighbors(self.r)
         xs, ys = hist(neighbors, boundary=(0,6))
         ax5.plot(xs, ys)
-        ax5.annotate(f'mean:{neighbors.mean()}', xy=(0.8,0.8),
-                textcoords='axes fraction')
+        ax5.annotate(f'mean :{neighbors.mean()}', xy=(0.5,0.5))
         ax5.set(xlabel='number of neighbors', ylabel='frequency')
 
+        for p_name in [name for name in df.columns if name.startswith('p')]:
+            df[p_name].plot(ax=ax6, label=p_name, title='z coordinate')
+            ax7.plot(*Freq_Ana(df[p_name], self.t_total), label=p_name)
+        ax7.set(title='Power spectrum of zs', xlabel='Freq', ylabel='PSD', 
+                    ylim=(1e-7, 1e2), yscale='log')            
+
+        df['R_corr'].plot(ax=ax8, title='r Correlation')
+
+        for ax in axes.reshape(-1):
+            ax.legend()
         print(f'saving statistics plots to {fname}')
         fig.savefig(fname)
 
-if __name__ == '__main__':
-    with open('sys.obj', 'rb') as f:
+def main(): 
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', type=str, nargs='?', default='sys.obj',
+            help='The MD_sys class object to be analysed')
+    args = parser.parse_args()
+    with open(args.input, 'rb') as f:
         sys = pickle.load(f) 
     with sys:
         sys.save_data('frames.xyz')
         sys.profile_plot('statistics.pdf')
+    return sys
 
-#r_correlation, v_correlation = Correlation(self.r_li, self.v_li)
-#ax4.plot(np.linspace(0,t,len(r_correlation)), r_correlation, label='R') 
-#ax4.set(title='Auto Correlation for displacement', xlabel='t', ylabel='<R(t)^2>')
-#ax4.legend()
-#ax5.plot(np.linspace(0,t,len(v_correlation)), v_correlation, label='C') 
-#ax5.set(title='Auto Correlation for velocity', xlabel='t', ylabel='C(t)')
-#ax5.legend()
+if __name__ == '__main__':
+    main()
+
