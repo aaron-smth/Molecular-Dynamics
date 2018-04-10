@@ -1,10 +1,10 @@
 import numpy as np
 from numpy import pi
 from scipy.spatial.distance import pdist, squareform
-from scipy.signal import find_peaks_cwt
+from scipy.signal import find_peaks_cwt 
+from scipy import signal
 import matplotlib.pyplot as plt 
 import pickle
-from tools import to_xyz, logging_dict
 from MD import MD_sys
 from tersoff import tersoff_V
 from itertools import groupby
@@ -30,8 +30,7 @@ def hist(xs, boundary=None, bins='sqrt'):
     fs = fs.astype(float)
     return midpoints, fs
 
-def plot_peaks(xs, ys, ax):
-    width = 15
+def plot_peaks(xs, ys, ax, width=15):
     peaks = find_peaks_cwt(ys, np.arange(1,width)) 
     for xy in zip(xs[peaks], ys[peaks]):
         ax.annotate('(%0.2f, %0.2f)' % xy, xy=xy, textcoords='data')
@@ -117,111 +116,4 @@ def particle_track(n_probes, r_li, fixed_ind):
     # (time, nth particle, direction) -> (nth particle, direction, time)
     return probe_arr, inds
 
-def Freq_Ana(xs, tmax):
-    from scipy.signal import periodogram
-    dt = tmax / len(xs)
-    fs = 1 / dt
-    freq, Pxx_den = periodogram(xs, fs)
-    return freq, Pxx_den
-
-class MD_sys(MD_sys):
-      
-    @property
-    def volume(self):
-        return self.L**3
-
-    def __enter__(self):
-        df = pd.DataFrame()
-        df['t'] = np.linspace(0, self.t_total, len(self.r_li))
-        df['K'] = np.array(self.K)
-        print('Calculating potential')
-        df['V'] = np.fromiter((tersoff_V(r) for r in self.r_li), dtype=float)
-        df['E'] = df.V + df.K
-        df['T'] = temperature(df.K, self.N, self.k) 
-        df['R_corr'], df['V_corr'] = Correlation(self.r_li, self.v_li)
-
-        probes, probe_inds = particle_track(3, self.r_li, self.outer_ind)
-        for probe, ind in zip(probes, probe_inds):
-            df[f'p_{ind}'] = probe
-
-        self.Virial = Virial_Stress(self.r, self.v, self.m, self.L)
-        print('Calculating correlation')
- 
-        df = df.set_index('t')
-        self.df = df
-        return self    
- 
-    def save_data(self, fname):
-        '''saving parameters to results.log'''
-        logging_dict(self.short_info())
-        '''saving xyz frames and energy data'''
-        print(f'save data to {fname}')
-        with open(fname, 'wb') as f:
-            for i,r in enumerate(self.r_li):
-                to_xyz(f, f'frame {i}', r, name='C')  
-
-    def profile_plot(self, fname): 
-        t,dt,N = self.t_total, self.dt, self.N
-        df = self.df
-        
-        print('plotting energy data...')    
-        fig, axes = plt.subplots(3,3, figsize=(20,15) )
-        ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8,ax9 = axes.reshape(-1)
-
-        df['E'].plot(ax=ax1, label='Total energy')
-        df['V'].plot(ax=ax1, label='Potential energy')
-        df['K'].plot(ax=ax1, label='Kinetic energy')
-        ax1.set(title='Energy evolution', xlabel='t/ps', ylabel='Energy ev/atom')
-
-        self.df['T'].plot(ax=ax2, title='Temperature')
-        ax2.axhline(self.T, ls='--', color='orange', label='Temperature Set')
-        
-        percents = [0, 0.2, 0.5, 1]
-        for i,pos in enumerate(percent_ind(self.r_li, percents)):
-            rs, gs = RDF(pos)
-            ax3.plot(rs, gs, label=f'time:{round(self.t_total * percents[i],2)}')
-        plot_peaks(rs, gs, ax3)
-        ax3.set(title='RDF', xlabel='r', ylabel='g(r)')
-
-        for i,r in enumerate(percent_ind(self.r_li, percents)):
-            thetas = ADF(r)
-            xs, ys = hist(thetas)
-            ax4.plot(xs, ys,label=f'time:{round(self.t_total * percents[i],2)}')
-            plot_peaks(xs, ys, ax4)
-            ax4.set(title='ADF', xlabel='angles', ylabel='frequency')
-
-        neighbors = Neighbors(self.r)
-        xs, ys = hist(neighbors, boundary=(0,6))
-        ax5.plot(xs, ys)
-        ax5.annotate(f'mean :{neighbors.mean()}', xy=(0.5,0.5))
-        ax5.set(xlabel='number of neighbors', ylabel='frequency')
-
-        for p_name in [name for name in df.columns if name.startswith('p')]:
-            df[p_name].plot(ax=ax6, label=p_name, title='z coordinate')
-            ax7.plot(*Freq_Ana(df[p_name], self.t_total), label=p_name)
-        ax7.set(title='Power spectrum of zs', xlabel='Freq', ylabel='PSD', 
-                    ylim=(1e-7, 1e2), yscale='log')            
-
-        df['R_corr'].plot(ax=ax8, title='r Correlation')
-
-        for ax in axes.reshape(-1):
-            ax.legend()
-        print(f'saving statistics plots to {fname}')
-        fig.savefig(fname)
-
-def main(): 
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('input', type=str, nargs='?', default='sys.obj',
-            help='The MD_sys class object to be analysed')
-    args = parser.parse_args()
-    with open(args.input, 'rb') as f:
-        sys = pickle.load(f) 
-    with sys:
-        sys.save_data('frames.xyz')
-        sys.profile_plot('statistics.pdf')
-    return sys
-
-if __name__ == '__main__':
-    main()
 
